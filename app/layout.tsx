@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { RootLayoutClient } from "@/components/RootLayoutClient";
 
 export const metadata: Metadata = {
-  title: "Fate-Tasker",
-  description: "Let fate decide your next hour of productivity",
+  title: "Task RNG",
+  description: "Let fate decide your tasks",
 };
 
 export default function RootLayout({
@@ -12,8 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-notion-bg text-notion-text font-sans">{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-task-lightBg text-task-lightText dark:bg-task-main dark:text-white font-sans">
+        <RootLayoutClient>{children}</RootLayoutClient>
+      </body>
     </html>
   );
 }

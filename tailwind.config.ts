@@ -5,6 +5,7 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -13,6 +14,12 @@ const config: Config = {
           border: "#E5E5E5",
           text: "#000000",
           secondary: "#626060",
+        },
+        task: {
+          sidebar: "#8B2C2C", // Dark maroon/burgundy
+          main: "#2D5F4F", // Dark green
+          lightBg: "#F5F5F5", // Light background
+          lightText: "#000000", // Light text
         },
       },
       fontFamily: {
