@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f7f7f5;
+  color: #000000;
+}
+
+@supports (font-variation-settings: normal) {
+  html {
+    font-family: "Inter var", system-ui, -apple-system, sans-serif;
+  }
+}
