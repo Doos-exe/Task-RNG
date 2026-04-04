@@ -3,7 +3,7 @@
  * Calculates probabilities based on task load and generates random selections
  */
 
-export type Category = "Work" | "Sleep" | "Play" | "Eat";
+export type Category = "Tasks" | "Rest" | "Game";
 
 export interface Weight {
   category: Category;
@@ -17,12 +17,11 @@ export interface ProbabilityState {
 }
 
 const STATIC_WEIGHTS = {
-  Sleep: 10,
-  Play: 10,
-  Eat: 10,
+  Rest: 10,
+  Game: 10,
 };
 
-const WORK_MULTIPLIER = 5; // Each pending task adds 5 to the weight
+const TASKS_MULTIPLIER = 5; // Each pending task adds 5 to the weight
 
 /**
  * Calculate weighted probabilities based on task count
@@ -34,17 +33,16 @@ export function calculateProbabilities(
 ): ProbabilityState {
   const weights: Weight[] = [];
 
-  // Calculate Work weight
-  const workWeight = pendingTaskCount * WORK_MULTIPLIER;
-  if (workWeight > 0) {
-    weights.push({ category: "Work", weight: workWeight });
+  // Calculate Tasks weight
+  const tasksWeight = pendingTaskCount * TASKS_MULTIPLIER;
+  if (tasksWeight > 0) {
+    weights.push({ category: "Tasks", weight: tasksWeight });
   }
 
   // Add static categories
   weights.push(
-    { category: "Sleep", weight: STATIC_WEIGHTS.Sleep },
-    { category: "Play", weight: STATIC_WEIGHTS.Play },
-    { category: "Eat", weight: STATIC_WEIGHTS.Eat }
+    { category: "Rest", weight: STATIC_WEIGHTS.Rest },
+    { category: "Game", weight: STATIC_WEIGHTS.Game }
   );
 
   // Calculate total weight
@@ -82,7 +80,7 @@ export function selectWeightedCategory(
   }
 
   // Fallback (should never reach here)
-  return "Play";
+  return "Game";
 }
 
 /**
@@ -97,22 +95,22 @@ export function getProbabilityState(
 }
 
 /**
- * Calculate the chance of landing on Work vs Leisure
+ * Calculate the chance of landing on Tasks vs Leisure
  * @param pendingTaskCount Number of pending tasks
- * @returns Work and Leisure percentages
+ * @returns Tasks and Leisure percentages
  */
-export function getWorkVsLeisureRatio(pendingTaskCount: number): {
-  work: number;
+export function getTasksVsLeisureRatio(pendingTaskCount: number): {
+  tasks: number;
   leisure: number;
 } {
   const state = calculateProbabilities(pendingTaskCount);
-  const workProb = state.probabilities.find((p) => p.category === "Work");
+  const tasksProb = state.probabilities.find((p) => p.category === "Tasks");
   const leisureProb = state.probabilities.reduce((sum, p) => {
-    return p.category !== "Work" ? sum + p.percentage : sum;
+    return p.category !== "Tasks" ? sum + p.percentage : sum;
   }, 0);
 
   return {
-    work: workProb?.percentage || 0,
+    tasks: tasksProb?.percentage || 0,
     leisure: leisureProb,
   };
 }

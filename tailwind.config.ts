@@ -9,21 +9,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        notion: {
-          bg: "#F7F7F5",
-          border: "#E5E5E5",
-          text: "#000000",
-          secondary: "#626060",
-        },
-        task: {
-          sidebar: "#8B2C2C", // Dark maroon/burgundy
-          main: "#2D5F4F", // Dark green
-          lightBg: "#F5F5F5", // Light background
-          lightText: "#000000", // Light text
+        app: {
+          sidebar: "#933333", // Maroon/burgundy
+          darkMain: "#2D5F4F", // Dark green for dark mode
+          lightMain: "#F5F5F5", // Light off-white for light mode
+          darkText: "#FFFFFF", // White text in dark mode
+          lightText: "#000000", // Black text in light mode
+          lightBorder: "#CCCCCC", // Light borders
+          darkBorder: "#FFFFFF", // White borders in dark mode
         },
       },
       fontFamily: {
-        sans: ["Inter", "Plus Jakarta Sans", "system-ui"],
+        sans: ["Inter", "Plus Jakarta Sans", "system-ui", "sans-serif"],
+      },
+      animation: {
+        "pulse-delay-1": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) 0.2s infinite",
+        "pulse-delay-2": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) 0.5s infinite",
       },
     },
   },

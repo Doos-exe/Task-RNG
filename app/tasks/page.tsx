@@ -22,33 +22,33 @@ export default function TasksPage() {
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "high":
-        return "text-red-600 dark:text-red-400";
+        return "text-red-600 dark:text-red-400 font-bold";
       case "medium":
-        return "text-yellow-600 dark:text-yellow-400";
+        return "text-yellow-600 dark:text-yellow-400 font-bold";
       case "low":
-        return "text-green-600 dark:text-green-400";
+        return "text-green-600 dark:text-green-400 font-bold";
       default:
-        return "";
+        return "text-app-lightText dark:text-app-darkText font-bold";
     }
   };
 
-  const getTimer = (risk: string) => {
+  const getRiskLabel = (risk: string) => {
     switch (risk) {
       case "high":
-        return "60 mins";
+        return "High (60 mins)";
       case "medium":
-        return "45 mins";
+        return "Medium (45 mins)";
       case "low":
-        return "30 mins";
+        return "Low (30 mins)";
       default:
-        return "-";
+        return "Medium (45 mins)";
     }
   };
 
   return (
-    <main className="min-h-screen bg-task-lightBg dark:bg-task-main dark:text-white p-8">
+    <main className="ml-48 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 dark:text-white">Tasks</h1>
+        <h1 className="text-4xl font-bold mb-8 tracking-wider">Tasks</h1>
 
         {/* Add Task Input */}
         <div className="mb-8 space-y-4">
@@ -59,12 +59,12 @@ export default function TasksPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleAdd()}
               placeholder="Add a new task..."
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-task-lightText dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:border-task-sidebar transition"
+              className="flex-1 px-4 py-3 border-2 border-app-lightBorder dark:border-app-darkBorder rounded bg-white dark:bg-gray-800 text-app-lightText dark:text-app-darkText placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:border-app-sidebar dark:focus:border-app-sidebar transition font-semibold"
             />
             <button
               onClick={handleAdd}
               disabled={!input.trim()}
-              className="px-4 py-2 bg-task-sidebar dark:bg-red-700 text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+              className="px-6 py-3 bg-app-sidebar text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition font-bold text-lg shadow-md"
             >
               +
             </button>
@@ -76,10 +76,10 @@ export default function TasksPage() {
               <button
                 key={priority}
                 onClick={() => setSelectedPriority(priority)}
-                className={`px-4 py-2 rounded border font-medium transition ${
+                className={`px-4 py-2 rounded border-2 font-bold transition ${
                   selectedPriority === priority
-                    ? "bg-task-sidebar text-white border-task-sidebar dark:bg-red-700 dark:border-red-700"
-                    : "border-gray-300 dark:border-gray-600 text-task-lightText dark:text-white hover:border-task-sidebar dark:hover:border-red-700"
+                    ? "bg-app-sidebar text-white border-app-sidebar shadow-md"
+                    : "border-app-lightBorder dark:border-app-darkBorder text-app-lightText dark:text-app-darkText hover:border-app-sidebar"
                 }`}
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
@@ -89,28 +89,22 @@ export default function TasksPage() {
         </div>
 
         {/* Tasks Table */}
-        <div className="overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-700">
-          <table className="w-full">
+        <div className="overflow-x-auto rounded-lg shadow-lg">
+          <table className="w-full border-collapse border-2 border-app-lightBorder dark:border-app-darkBorder">
             <thead>
-              <tr className="border-b border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <th className="px-6 py-4 text-left font-semibold text-task-lightText dark:text-white">
+              <tr className="border-2 border-app-lightBorder dark:border-app-darkBorder bg-gray-100 dark:bg-gray-800">
+                <th className="px-6 py-4 text-left font-bold text-app-lightText dark:text-app-darkText text-lg">
                   Tasks
                 </th>
-                <th className="px-6 py-4 text-left font-semibold text-task-lightText dark:text-white w-32">
+                <th className="px-6 py-4 text-left font-bold text-app-lightText dark:text-app-darkText border-l-2 border-app-lightBorder dark:border-app-darkBorder text-lg">
                   Risk
-                </th>
-                <th className="px-6 py-4 text-left font-semibold text-task-lightText dark:text-white w-32">
-                  Timer
-                </th>
-                <th className="px-6 py-4 text-center font-semibold text-task-lightText dark:text-white w-12">
-                  Action
                 </th>
               </tr>
             </thead>
             <tbody>
               {pendingTasks.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <tr className="border-2 border-app-lightBorder dark:border-app-darkBorder">
+                  <td colSpan={2} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400 font-semibold">
                     No tasks yet. Add one to get started!
                   </td>
                 </tr>
@@ -118,27 +112,22 @@ export default function TasksPage() {
                 pendingTasks.map((task) => (
                   <tr
                     key={task.id}
-                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                    className="border-2 border-app-lightBorder dark:border-app-darkBorder hover:bg-gray-50 dark:hover:bg-gray-900 transition"
                   >
-                    <td className="px-6 py-4 text-task-lightText dark:text-white">
-                      {task.title}
+                    <td className="px-6 py-4 text-app-lightText dark:text-app-darkText font-semibold">
+                      <div className="flex justify-between items-center">
+                        <span>{task.title}</span>
+                        <button
+                          onClick={() => removeTask(task.id)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition ml-4 font-bold text-lg"
+                          title="Delete task"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </td>
-                    <td className={`px-6 py-4 font-semibold ${getRiskColor(task.priority || "medium")}`}>
-                      {task.priority
-                        ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1)
-                        : "Medium"}
-                    </td>
-                    <td className="px-6 py-4 text-task-lightText dark:text-white">
-                      {getTimer(task.priority || "medium")}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => removeTask(task.id)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition font-bold"
-                        title="Delete task"
-                      >
-                        🗑️
-                      </button>
+                    <td className={`px-6 py-4 border-l-2 border-app-lightBorder dark:border-app-darkBorder ${getRiskColor(task.priority || "medium")}`}>
+                      {getRiskLabel(task.priority || "medium")}
                     </td>
                   </tr>
                 ))

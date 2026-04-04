@@ -13,6 +13,8 @@ interface TaskStore {
   tasks: Task[];
   coins: number;
   theme: "light" | "dark";
+  lastSpinSkipDate: string;
+  currentSkipCost: number;
   addTask: (title: string, priority?: "low" | "medium" | "high") => void;
   removeTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -20,6 +22,9 @@ interface TaskStore {
   pendingCount: () => number;
   addCoins: (amount: number) => void;
   spendCoins: (amount: number) => boolean;
+  resetCoins: () => void;
+  getSkipCost: () => number;
+  useSkip: () => boolean;
   setTheme: (theme: "light" | "dark") => void;
 }
 
@@ -29,6 +34,8 @@ export const useTaskStore = create<TaskStore>()(
       tasks: [],
       coins: 0,
       theme: "light",
+      lastSpinSkipDate: "",
+      currentSkipCost: 1,
 
       addTask: (title, priority = "medium") =>
         set((state) => ({
@@ -77,6 +84,41 @@ export const useTaskStore = create<TaskStore>()(
         if (currentCoins >= amount) {
           set((state) => ({
             coins: state.coins - amount,
+          }));
+          return true;
+        }
+        return false;
+      },
+
+      resetCoins: () =>
+        set({
+          coins: 0,
+        }),
+
+      getSkipCost: () => {
+        const today = new Date().toDateString();
+        const lastDate = get().lastSpinSkipDate;
+
+        // If it's a new day, reset the cost to 1
+        if (lastDate !== today) {
+          set({
+            lastSpinSkipDate: today,
+            currentSkipCost: 1,
+          });
+          return 1;
+        }
+
+        return get().currentSkipCost;
+      },
+
+      useSkip: () => {
+        const skipCost = get().getSkipCost();
+        const spent = get().spendCoins(skipCost);
+
+        if (spent) {
+          // Double the cost for next skip
+          set((state) => ({
+            currentSkipCost: state.currentSkipCost * 2,
           }));
           return true;
         }
