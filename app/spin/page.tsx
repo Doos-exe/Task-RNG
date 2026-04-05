@@ -8,10 +8,11 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/store";
 
 export default function SpinPage() {
-  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip } = useTaskStore();
+  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask } = useTaskStore();
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentResult, setCurrentResult] = useState<string | null>(null);
   const [timerActive, setTimerActive] = useState(false);
+  const [popupResult, setPopupResult] = useState<string | null>(null);
 
   // Confirmation dialogs
   const [showCollectConfirm, setShowCollectConfirm] = useState(false);
@@ -23,8 +24,12 @@ export default function SpinPage() {
 
   const handleSpinComplete = useCallback((result: string) => {
     setCurrentResult(result);
+    setPopupResult(result);
     setIsSpinning(false);
     setTimerActive(true);
+
+    // Hide popup after 3 seconds
+    setTimeout(() => setPopupResult(null), 3000);
   }, []);
 
   const handleSpin = useCallback(() => {
@@ -67,6 +72,15 @@ export default function SpinPage() {
   const handleConfirmCollect = () => {
     if (currentResult && pendingTasks > 0) {
       addCoins(1);
+
+      // Auto-delete the task from the database
+      if (isTaskResult) {
+        const taskToDelete = tasks.find(t => t.title === currentResult);
+        if (taskToDelete) {
+          removeTask(taskToDelete.id);
+        }
+      }
+
       setShowCollectConfirm(false);
       setCurrentResult(null);
       setTimerActive(false);
@@ -86,19 +100,25 @@ export default function SpinPage() {
   const isTaskResult = currentResult && currentResult !== "Rest" && currentResult !== "Game";
   const hasNoPendingTasks = pendingTasks === 0;
 
+  // Get the priority of the current task result
+  const currentTaskPriority = isTaskResult
+    ? tasks.find(t => t.title === currentResult)?.priority || "medium"
+    : undefined;
+
   return (
     <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
       <div className="flex flex-col items-center justify-center min-h-screen -ml-64">
         {/* Header */}
         <div className="flex justify-between items-center mb-16 w-full px-8">
           <div className="flex-1" />
-          <h1 className="text-5xl font-black tracking-wider">🎰 TASK RNG</h1>
+          <h1 className="text-5xl font-black tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>🎰 TASK RNG</h1>
           <div className="flex-1 text-right flex items-center gap-6 justify-end">
             <div>
-              <p className="text-2xl font-black text-yellow-600">💰 {coins} Coins</p>
+              <p className="text-2xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>💰 {coins} Coins</p>
               <button
                 onClick={handleResetCoins}
                 className="text-xs font-bold text-gray-500 hover:text-red-600 transition mt-1 uppercase tracking-widest"
+                style={{ fontFamily: "Courier New, monospace" }}
               >
                 Reset Coins
               </button>
@@ -109,16 +129,16 @@ export default function SpinPage() {
         {/* No Tasks Warning */}
         {hasNoPendingTasks && !currentResult && (
           <div className="mb-8 p-6 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center">
-            <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200">
+            <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200" style={{ fontFamily: "Courier New, monospace" }}>
               ⚠️ No pending tasks! Add tasks to continue spinning.
             </p>
           </div>
         )}
 
         {/* Main Slot Machine Area - Centered */}
-        <div className="flex flex-col items-center justify-center gap-16 w-full">
+        <div className="flex flex-col items-center justify-center gap-16 w-full relative">
           {/* Slot Machine with Handle - Casino Style */}
-          <div className="flex items-center gap-16">
+          <div className={`flex items-center gap-16 ${popupResult ? 'blur-sm' : ''} transition-all duration-300`}>
             {/* Handle on Left */}
             <InteractiveHandle
               onSpin={handleSpin}
@@ -156,10 +176,10 @@ export default function SpinPage() {
               <div className="w-40 h-32 bg-gradient-to-b from-yellow-300 to-yellow-200 rounded-2xl border-4 border-yellow-600 flex flex-col items-center justify-center p-4 shadow-lg">
                 {currentResult ? (
                   <div className="text-center">
-                    <p className="text-xs font-black text-yellow-700 uppercase mb-2 tracking-widest">
+                    <p className="text-xs font-black text-yellow-700 uppercase mb-2 tracking-widest" style={{ fontFamily: "Courier New, monospace" }}>
                       Result
                     </p>
-                    <p className="text-sm font-black text-gray-900 break-words line-clamp-4">
+                    <p className="text-sm font-black text-gray-900 break-words line-clamp-4" style={{ fontFamily: "Courier New, monospace" }}>
                       {currentResult}
                     </p>
                   </div>
@@ -181,25 +201,45 @@ export default function SpinPage() {
             </div>
           </div>
 
-          {/* Status Message */}
-          <div className="mt-8 text-center">
+        {/* Popup Notification with Backdrop Blur */}
+        {popupResult && (
+          <>
+            {/* Blurred Backdrop */}
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
+
+            {/* Popup Card */}
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
+              <div className="bg-gradient-to-br from-yellow-300 via-yellow-200 to-yellow-100 border-8 border-yellow-600 rounded-3xl px-16 py-12 shadow-2xl min-w-96">
+                <p className="text-2xl font-black text-yellow-700 uppercase mb-4 tracking-widest text-center" style={{ fontFamily: "Courier New, monospace" }}>
+                  You Got:
+                </p>
+                <p className="text-5xl font-black text-gray-900 text-center" style={{ fontFamily: "Courier New, monospace" }}>
+                  {popupResult}
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
+          {/* Status Message - Bottom Right */}
+          <div className="fixed bottom-8 right-8 text-right z-20">
             {timerActive ? (
-              <p className="text-lg font-bold text-red-600 dark:text-red-400 uppercase tracking-widest">
+              <p className="text-lg font-bold text-white bg-red-600 dark:bg-red-700 rounded-lg px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
                 {isTaskResult
-                  ? "⏱️ Task Timer - Pull handle to skip or click 💰"
-                  : "⏱️ Activity Timer - Pull handle to skip"}
+                  ? "⏱️ Pull handle to skip or click 💰"
+                  : "⏱️ Pull handle to skip"}
               </p>
             ) : isSpinning ? (
-              <p className="text-lg font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+              <p className="text-lg font-bold text-white bg-blue-600 dark:bg-blue-700 rounded-lg px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
                 🎰 Spinning...
               </p>
             ) : hasNoPendingTasks ? (
-              <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-widest">
-                ⚠️ No tasks available - Add tasks first
+              <p className="text-lg font-bold text-gray-900 bg-yellow-400 dark:bg-yellow-500 rounded-lg px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                ⚠️ No tasks available
               </p>
             ) : (
-              <p className="text-lg font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest">
-                ↓ Drag the handle down to spin the machine ↓
+              <p className="text-lg font-bold text-white bg-gray-700 dark:bg-gray-600 rounded-lg px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                ↓ Drag handle down ↓
               </p>
             )}
           </div>
@@ -241,7 +281,7 @@ export default function SpinPage() {
       />
 
       {/* Timer at Bottom */}
-      <ResultTimer result={currentResult} isStarted={timerActive} onTaskComplete={handleTaskComplete} />
+      <ResultTimer result={currentResult} isStarted={timerActive} onTaskComplete={handleTaskComplete} taskPriority={currentTaskPriority} />
     </main>
   );
 }

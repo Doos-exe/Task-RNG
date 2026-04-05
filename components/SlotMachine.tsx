@@ -166,21 +166,7 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-yellow-500 to-yellow-700 rounded-b-2xl pointer-events-none z-30" />
       </div>
 
-      {/* Result Display */}
-      {selectedResult && (
-        <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="text-center"
-        >
-          <p className={`uppercase tracking-widest font-black mb-3 ${isLarge ? "text-lg text-yellow-600" : "text-xs text-gray-600"}`}>
-            You got:
-          </p>
-          <p className={`font-black ${resultTextClass} ${isLarge ? "text-yellow-600" : "text-gray-800"}`}>
-            {selectedResult}
-          </p>
-        </motion.div>
-      )}
+      {/* Result Display - Removed to avoid redundancy, shown as popup instead */}
 
       {/* Spinning Indicator */}
       {isSpinning && (

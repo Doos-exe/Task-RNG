@@ -1,0 +1,17 @@
+Date: 04/05/26
+
+Updates:
+- Sidebar UI Changes
+- Added new button
+- Spin Page
+  - UI Change
+  - Fixed the timer
+- Task Page
+  - UI Change
+
+
+To Update:
+- More UI changes each page
+- Add a pity system to balance the chances
+- Draw the elements (logo, symbols, poker chips)
+- Have it personalized (emails)

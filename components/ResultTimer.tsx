@@ -8,9 +8,10 @@ interface ResultTimerProps {
   result: string | null;
   isStarted: boolean;
   onTaskComplete?: () => void;
+  taskPriority?: "low" | "medium" | "high";
 }
 
-export function ResultTimer({ result, isStarted, onTaskComplete }: ResultTimerProps) {
+export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }: ResultTimerProps) {
   const { addCoins, pendingCount } = useTaskStore();
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
@@ -32,15 +33,23 @@ export function ResultTimer({ result, isStarted, onTaskComplete }: ResultTimerPr
       const randomIndex = Math.floor(Math.random() * options.length);
       duration = options[randomIndex] * 60; // Convert to seconds
     } else {
-      // For Tasks, use a default of 30 minutes
-      duration = 30 * 60;
+      // For Tasks, use priority to determine duration
+      if (taskPriority === "low") {
+        duration = 30 * 60;
+      } else if (taskPriority === "medium") {
+        duration = 45 * 60;
+      } else if (taskPriority === "high") {
+        duration = 60 * 60;
+      } else {
+        duration = 45 * 60; // Default to medium
+      }
     }
 
     setTotalTime(duration);
     setTimeLeft(duration);
     setIsActive(isStarted);
     setShowCompletion(false);
-  }, [result, isStarted]);
+  }, [result, isStarted, taskPriority]);
 
   // Timer countdown
   useEffect(() => {

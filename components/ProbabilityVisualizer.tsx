@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { getWorkVsLeisureRatio } from "@/lib/probability";
+import { getTasksVsLeisureRatio } from "@/lib/probability";
 
 interface ProbabilityVisualizerProps {
   pendingTaskCount: number;
@@ -10,7 +10,7 @@ interface ProbabilityVisualizerProps {
 export function ProbabilityVisualizer({
   pendingTaskCount,
 }: ProbabilityVisualizerProps) {
-  const { work, leisure } = getWorkVsLeisureRatio(pendingTaskCount);
+  const { tasks, leisure } = getTasksVsLeisureRatio(pendingTaskCount);
 
   return (
     <div className="w-full max-w-md mx-auto bg-white border border-notion-border rounded-lg p-4">
@@ -23,13 +23,13 @@ export function ProbabilityVisualizer({
         {/* Work */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-medium text-notion-text">Work</span>
-            <span className="text-sm font-bold text-notion-text">{work}%</span>
+            <span className="text-sm font-medium text-notion-text">Tasks</span>
+            <span className="text-sm font-bold text-notion-text">{tasks}%</span>
           </div>
           <div className="w-full bg-notion-bg rounded-full h-3 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${work}%` }}
+              animate={{ width: `${tasks}%` }}
               transition={{ duration: 0.5 }}
               className="h-full bg-notion-text"
             />
