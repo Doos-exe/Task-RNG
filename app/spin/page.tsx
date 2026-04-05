@@ -87,12 +87,13 @@ export default function SpinPage() {
   const hasNoPendingTasks = pendingTasks === 0;
 
   return (
-    <main className="ml-48 min-h-screen bg-gradient-to-br from-app-lightMain to-gray-50 dark:from-app-darkMain dark:to-gray-900 text-app-lightText dark:text-app-darkText p-8">
-      <div className="max-w-7xl mx-auto">
+    <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
+      <div className="flex flex-col items-center justify-center min-h-screen -ml-64">
         {/* Header */}
-        <div className="flex justify-between items-center mb-16">
+        <div className="flex justify-between items-center mb-16 w-full px-8">
+          <div className="flex-1" />
           <h1 className="text-5xl font-black tracking-wider">🎰 TASK RNG</h1>
-          <div className="text-right flex items-center gap-6">
+          <div className="flex-1 text-right flex items-center gap-6 justify-end">
             <div>
               <p className="text-2xl font-black text-yellow-600">💰 {coins} Coins</p>
               <button
@@ -115,7 +116,7 @@ export default function SpinPage() {
         )}
 
         {/* Main Slot Machine Area - Centered */}
-        <div className="flex flex-col items-center justify-center gap-16">
+        <div className="flex flex-col items-center justify-center gap-16 w-full">
           {/* Slot Machine with Handle - Casino Style */}
           <div className="flex items-center gap-16">
             {/* Handle on Left */}

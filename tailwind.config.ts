@@ -11,8 +11,8 @@ const config: Config = {
       colors: {
         app: {
           sidebar: "#933333", // Maroon/burgundy
-          darkMain: "#2D5F4F", // Dark green for dark mode
-          lightMain: "#F5F5F5", // Light off-white for light mode
+          darkMain: "#0A1941", // Dark blue for dark mode
+          lightMain: "#2D5F4F", // Green for light mode
           darkText: "#FFFFFF", // White text in dark mode
           lightText: "#000000", // Black text in light mode
           lightBorder: "#CCCCCC", // Light borders

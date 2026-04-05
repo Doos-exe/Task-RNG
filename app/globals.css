@@ -20,13 +20,13 @@ html {
 
 /* Light Mode (Default) */
 body {
-  background-color: #f5f5f52f;
+  background-color: #2D5F4F;
   color: #000000;
 }
 
 /* Dark Mode */
 html.dark body {
-  background-color: #2D5F4F;
+  background-color: #0A1941;
   color: #FFFFFF;
 }
 

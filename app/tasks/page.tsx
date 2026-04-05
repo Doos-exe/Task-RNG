@@ -46,9 +46,9 @@ export default function TasksPage() {
   };
 
   return (
-    <main className="ml-48 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
+    <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 tracking-wider">Tasks</h1>
+        <h1 className="text-4xl font-bold mb-8 tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>Tasks</h1>
 
         {/* Add Task Input */}
         <div className="mb-8 space-y-4">
@@ -59,7 +59,8 @@ export default function TasksPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleAdd()}
               placeholder="Add a new task..."
-              className="flex-1 px-4 py-3 border-2 border-app-lightBorder dark:border-app-darkBorder rounded bg-white dark:bg-gray-800 text-app-lightText dark:text-app-darkText placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:border-app-sidebar dark:focus:border-app-sidebar transition font-semibold"
+              className="flex-1 px-4 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-300 outline-none focus:border-yellow-400 dark:focus:border-yellow-400 transition font-semibold"
+              style={{ fontFamily: "Courier New, monospace" }}
             />
             <button
               onClick={handleAdd}
@@ -78,9 +79,10 @@ export default function TasksPage() {
                 onClick={() => setSelectedPriority(priority)}
                 className={`px-4 py-2 rounded border-2 font-bold transition ${
                   selectedPriority === priority
-                    ? "bg-app-sidebar text-white border-app-sidebar shadow-md"
-                    : "border-app-lightBorder dark:border-app-darkBorder text-app-lightText dark:text-app-darkText hover:border-app-sidebar"
+                    ? "bg-app-sidebar text-white border-white dark:border-white shadow-md"
+                    : "border-white dark:border-white text-white dark:text-white hover:border-yellow-400 dark:hover:border-yellow-400"
                 }`}
+                style={{ fontFamily: "Courier New, monospace" }}
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
               </button>
@@ -90,21 +92,21 @@ export default function TasksPage() {
 
         {/* Tasks Table */}
         <div className="overflow-x-auto rounded-lg shadow-lg">
-          <table className="w-full border-collapse border-2 border-app-lightBorder dark:border-app-darkBorder">
+          <table className="w-full border-collapse border-2 border-white dark:border-white">
             <thead>
-              <tr className="border-2 border-app-lightBorder dark:border-app-darkBorder bg-gray-100 dark:bg-gray-800">
-                <th className="px-6 py-4 text-left font-bold text-app-lightText dark:text-app-darkText text-lg">
+              <tr className="border-2 border-white dark:border-white bg-white dark:bg-gray-700">
+                <th className="px-6 py-4 text-left font-bold text-black dark:text-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
                   Tasks
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-app-lightText dark:text-app-darkText border-l-2 border-app-lightBorder dark:border-app-darkBorder text-lg">
+                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
                   Risk
                 </th>
               </tr>
             </thead>
             <tbody>
               {pendingTasks.length === 0 ? (
-                <tr className="border-2 border-app-lightBorder dark:border-app-darkBorder">
-                  <td colSpan={2} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400 font-semibold">
+                <tr className="border-2 border-white dark:border-white">
+                  <td colSpan={2} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
                     No tasks yet. Add one to get started!
                   </td>
                 </tr>
@@ -112,21 +114,22 @@ export default function TasksPage() {
                 pendingTasks.map((task) => (
                   <tr
                     key={task.id}
-                    className="border-2 border-app-lightBorder dark:border-app-darkBorder hover:bg-gray-50 dark:hover:bg-gray-900 transition"
+                    className="border-2 border-white dark:border-white dark:bg-gray-600 hover:opacity-90 transition"
+                    style={{ backgroundColor: "#1a3a32" }}
                   >
-                    <td className="px-6 py-4 text-app-lightText dark:text-app-darkText font-semibold">
+                    <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
                       <div className="flex justify-between items-center">
                         <span>{task.title}</span>
                         <button
                           onClick={() => removeTask(task.id)}
-                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition ml-4 font-bold text-lg"
+                          className="text-yellow-300 dark:text-yellow-300 hover:text-yellow-100 dark:hover:text-yellow-100 transition ml-4 font-bold text-lg"
                           title="Delete task"
                         >
                           🗑️
                         </button>
                       </div>
                     </td>
-                    <td className={`px-6 py-4 border-l-2 border-app-lightBorder dark:border-app-darkBorder ${getRiskColor(task.priority || "medium")}`}>
+                    <td className={`px-6 py-4 border-l-2 border-white dark:border-white font-bold ${getRiskColor(task.priority || "medium")}`} style={{ fontFamily: "Courier New, monospace" }}>
                       {getRiskLabel(task.priority || "medium")}
                     </td>
                   </tr>

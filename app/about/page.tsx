@@ -2,7 +2,7 @@
 
 export default function AboutPage() {
   return (
-    <main className="ml-48 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
+    <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 tracking-wider">About</h1>
 
