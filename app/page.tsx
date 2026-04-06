@@ -17,9 +17,9 @@ export default function Home() {
           <PokerChip label="TASKS" href="/tasks" />
         </div>
 
-        {/* PERSONALIZED - Center */}
+        {/* CUSTOMIZE - Center */}
         <div className="absolute left-1/3 bottom-1/4 -translate-x-1/2 translate-y-1/2">
-          <PokerChip label="PERSONALIZED" href="/personalized" />
+          <PokerChip label="CUSTOMIZE" href="/personalized" />
         </div>
 
         {/* ABOUT - Bottom Right */}

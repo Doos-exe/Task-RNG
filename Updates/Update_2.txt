@@ -1,0 +1,21 @@
+Date: 04/06/26
+
+Updates:
+- Added a new 'Customize' button
+  - Personalized leisures
+- Spin Page
+  - Fixed the animation
+- Emoji for the tables and machine
+- New Poker Chip Design
+
+
+To Update:
+- Spin Page
+  - Fix the UI and animation
+- Task and Personalized Page
+  - Fix the UI
+  - Fix the emoji options (make it easy)
+- About Page
+  - Rewrite 
+- Add sound effects
+- Draw elements for the UI

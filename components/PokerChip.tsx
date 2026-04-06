@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTaskStore } from "@/lib/store";
 
 interface PokerChipProps {
   label: string;
@@ -9,48 +10,34 @@ interface PokerChipProps {
 }
 
 export function PokerChip({ label, href, className = "" }: PokerChipProps) {
+  const theme = useTaskStore((state) => state.theme);
+
   return (
     <Link href={href}>
       <div
-        className={`w-40 h-40 rounded-full border-8 border-black bg-white flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-2xl relative ${className}`}
+        className={`w-64 h-64 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform relative ${className}`}
         style={{
-          clipPath: "polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)",
+          backgroundImage: `url(/Elements/${theme === "dark" ? "DarkMode" : "LightMode"}.png)`,
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       >
-        {/* Diamond facets - top right */}
-        <div
-          className="absolute top-0 right-0 w-1/3 h-1/3 bg-gray-300 opacity-60"
+        {/* Text on top of image */}
+        <span
+          className={`${theme === "dark" ? "text-white" : "text-black"} text-center relative z-10 drop-shadow-lg px-3 break-words`}
           style={{
-            clipPath: "polygon(0 0, 100% 0, 0 100%)",
+            fontFamily: "'Playfair Display', serif",
+            fontSize: "1.3rem",
+            fontWeight: 900,
+            letterSpacing: "0.02em",
+            lineHeight: "1.1",
+            maxWidth: "85%",
+            wordBreak: "break-word",
           }}
-        />
-        {/* Diamond facets - bottom left */}
-        <div
-          className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gray-200 opacity-60"
-          style={{
-            clipPath: "polygon(100% 0, 100% 100%, 0 100%)",
-          }}
-        />
-        {/* Diamond facets - top left */}
-        <div
-          className="absolute top-0 left-0 w-1/4 h-1/4 bg-gray-400 opacity-40"
-          style={{
-            clipPath: "polygon(0 0, 100% 0, 0 100%)",
-          }}
-        />
-        {/* Diamond facets - bottom right */}
-        <div
-          className="absolute bottom-0 right-0 w-1/4 h-1/4 bg-gray-100 opacity-40"
-          style={{
-            clipPath: "polygon(100% 0, 100% 100%, 0 100%)",
-          }}
-        />
-        {/* Center circle with content */}
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg">
-          <span className="text-black font-black text-lg text-center relative z-10">
-            {label}
-          </span>
-        </div>
+        >
+          {label}
+        </span>
       </div>
     </Link>
   );
