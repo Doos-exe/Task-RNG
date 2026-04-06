@@ -8,7 +8,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/store";
 
 export default function SpinPage() {
-  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask } = useTaskStore();
+  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures } = useTaskStore();
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentResult, setCurrentResult] = useState<string | null>(null);
   const [timerActive, setTimerActive] = useState(false);
@@ -23,13 +23,18 @@ export default function SpinPage() {
   const canSpin = pendingTasks > 0 || coins > 0;
 
   const handleSpinComplete = useCallback((result: string) => {
-    setCurrentResult(result);
-    setPopupResult(result);
-    setIsSpinning(false);
-    setTimerActive(true);
+    // Delay everything until after animation completes
+    setTimeout(() => {
+      setCurrentResult(result);
+      setIsSpinning(false);
+      setTimerActive(true);
 
-    // Hide popup after 3 seconds
-    setTimeout(() => setPopupResult(null), 3000);
+      // Show popup immediately after result appears
+      setPopupResult(result);
+
+      // Hide popup after 3 seconds
+      setTimeout(() => setPopupResult(null), 3000);
+    }, 100); // Small delay to ensure animation has settled
   }, []);
 
   const handleSpin = useCallback(() => {
@@ -97,7 +102,7 @@ export default function SpinPage() {
     setTimerActive(false);
   };
 
-  const isTaskResult = currentResult && currentResult !== "Rest" && currentResult !== "Game";
+  const isTaskResult = currentResult && !leisures.some(l => l.title === currentResult);
   const hasNoPendingTasks = pendingTasks === 0;
 
   // Get the priority of the current task result
@@ -128,7 +133,7 @@ export default function SpinPage() {
 
         {/* No Tasks Warning */}
         {hasNoPendingTasks && !currentResult && (
-          <div className="mb-8 p-6 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center">
+          <div className="mb-8 p-6 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center" suppressHydrationWarning>
             <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200" style={{ fontFamily: "Courier New, monospace" }}>
               ⚠️ No pending tasks! Add tasks to continue spinning.
             </p>
@@ -136,9 +141,9 @@ export default function SpinPage() {
         )}
 
         {/* Main Slot Machine Area - Centered */}
-        <div className="flex flex-col items-center justify-center gap-16 w-full relative">
+        <div className="flex flex-col items-center justify-center gap-16 w-full relative" suppressHydrationWarning>
           {/* Slot Machine with Handle - Casino Style */}
-          <div className={`flex items-center gap-16 ${popupResult ? 'blur-sm' : ''} transition-all duration-300`}>
+          <div className={`flex items-center gap-16 transition-all duration-300`}>
             {/* Handle on Left */}
             <InteractiveHandle
               onSpin={handleSpin}
@@ -170,11 +175,11 @@ export default function SpinPage() {
               </div>
             </div>
 
-            {/* Result Display on Right */}
-            <div className="flex flex-col items-center gap-8">
-              {/* Result Window */}
-              <div className="w-40 h-32 bg-gradient-to-b from-yellow-300 to-yellow-200 rounded-2xl border-4 border-yellow-600 flex flex-col items-center justify-center p-4 shadow-lg">
-                {currentResult ? (
+            {/* Result Display on Right - Hide during spin */}
+            {!isSpinning && currentResult && (
+              <div className={`flex flex-col items-center gap-8 ${popupResult ? 'blur-sm' : ''} transition-all duration-300`}>
+                {/* Result Window */}
+                <div className="w-40 h-32 bg-gradient-to-b from-yellow-300 to-yellow-200 rounded-2xl border-4 border-yellow-600 flex flex-col items-center justify-center p-4 shadow-lg">
                   <div className="text-center">
                     <p className="text-xs font-black text-yellow-700 uppercase mb-2 tracking-widest" style={{ fontFamily: "Courier New, monospace" }}>
                       Result
@@ -183,22 +188,20 @@ export default function SpinPage() {
                       {currentResult}
                     </p>
                   </div>
-                ) : (
-                  <p className="text-lg font-bold text-gray-500">?</p>
+                </div>
+
+                {/* Collect Coins Button - Shows for Task results while timer is active */}
+                {isTaskResult && timerActive && (
+                  <button
+                    onClick={handleCollectAttempt}
+                    className="w-20 h-20 rounded-full font-black text-2xl transition-all shadow-xl transform hover:scale-110 active:scale-95 bg-gradient-to-br from-green-400 to-green-600 text-white cursor-pointer border-4 border-green-700 hover:from-green-300 hover:to-green-500"
+                    title="Finish task early and collect coin"
+                  >
+                    💰
+                  </button>
                 )}
               </div>
-
-              {/* Collect Coins Button - Shows for Task results while timer is active */}
-              {isTaskResult && timerActive && (
-                <button
-                  onClick={handleCollectAttempt}
-                  className="w-20 h-20 rounded-full font-black text-2xl transition-all shadow-xl transform hover:scale-110 active:scale-95 bg-gradient-to-br from-green-400 to-green-600 text-white cursor-pointer border-4 border-green-700 hover:from-green-300 hover:to-green-500"
-                  title="Finish task early and collect coin"
-                >
-                  💰
-                </button>
-              )}
-            </div>
+            )}
           </div>
 
         {/* Popup Notification with Backdrop Blur */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { selectWeightedCategory, Category } from "@/lib/probability";
 import { useTaskStore } from "@/lib/store";
 
@@ -11,65 +11,80 @@ interface SlotMachineProps {
   size?: "small" | "large";
 }
 
-const SPIN_DURATION = 3;
-const ITEMS_TO_SHOW = 3;
+const SPIN_DURATION = 5;
+const ITEM_HEIGHT_LARGE = 96;
+const ITEM_HEIGHT_SMALL = 48;
+const GAP_LARGE = 16;
+const GAP_SMALL = 12;
 
 export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMachineProps) {
   const tasks = useTaskStore((state) => state.tasks);
-  const [selectedResult, setSelectedResult] = useState<string | null>(null);
+  const leisures = useTaskStore((state) => state.leisures);
   const [reelRotations, setReelRotations] = useState([0, 0, 0]);
-  const [displayReels, setDisplayReels] = useState<string[][]>([[], [], []]);
+  const [displayReels, setDisplayReels] = useState<Array<{ title: string; emoji: string }[]>>([[], [], []]);
 
   const isLarge = size === "large";
+  const itemHeight = isLarge ? ITEM_HEIGHT_LARGE : ITEM_HEIGHT_SMALL;
+  const gap = isLarge ? GAP_LARGE : GAP_SMALL;
+  const itemSize = itemHeight + gap;
 
-  // Generate reel items based on pending tasks
-  const generateReelItems = () => {
+  const leisureTitles = useMemo(() => leisures.map((l) => l.title), [leisures]);
+
+  const titleToEmojiMap = useMemo(() => {
+    const map = new Map<string, string>();
+    leisures.forEach((l) => map.set(l.title, l.emoji));
+    tasks.forEach((t) => map.set(t.title, t.emoji));
+    return map;
+  }, [leisures, tasks]);
+
+  // Generate reel items - continuous repeating list
+  const { reelItems } = useMemo(() => {
     const pendingTasks = tasks.filter((t) => !t.completed);
 
-    // If no tasks, use Rest and Game only
-    if (pendingTasks.length === 0) {
-      return [
-        Array(ITEMS_TO_SHOW + 2).fill("Rest"),
-        Array(ITEMS_TO_SHOW + 2).fill("Rest"),
-        Array(ITEMS_TO_SHOW + 2).fill("Game"),
-      ];
+    if (leisureTitles.length === 0) {
+      return { reelItems: [[], [], []] };
     }
 
-    // For each reel, create a mix of options
-    const reel1 = Array(ITEMS_TO_SHOW + 2).fill(null).map((_, i) => {
-      const options = ["Rest", "Game", ...pendingTasks.map(t => t.title)];
-      return options[i % options.length];
-    });
+    const allOptions = [...leisureTitles, ...pendingTasks.map(t => t.title)];
 
-    const reel2 = Array(ITEMS_TO_SHOW + 2).fill(null).map((_, i) => {
-      const options = ["Game", "Rest", ...pendingTasks.map(t => t.title)];
-      return options[i % options.length];
-    });
+    if (allOptions.length === 0) {
+      return { reelItems: [[], [], []] };
+    }
 
-    const reel3 = Array(ITEMS_TO_SHOW + 2).fill(null).map((_, i) => {
-      const options = [...pendingTasks.map(t => t.title), "Rest", "Game"];
-      return options[i % options.length];
-    });
+    // Create 50 items per reel - enough for multiple spins without gaps
+    const createReel = (offset: number = 0) => {
+      return Array(50)
+        .fill(null)
+        .map((_, i) => {
+          const title = allOptions[(i + offset) % allOptions.length];
+          return {
+            title,
+            emoji: titleToEmojiMap.get(title) || "🎯",
+          };
+        });
+    };
 
-    return [reel1, reel2, reel3];
-  };
+    return {
+      reelItems: [createReel(0), createReel(1), createReel(2)],
+    };
+  }, [tasks, leisureTitles, titleToEmojiMap]);
 
   useEffect(() => {
-    const reels = generateReelItems();
-    setDisplayReels(reels);
-  }, [tasks]);
+    if (displayReels[0].length === 0 && reelItems[0].length > 0) {
+      setDisplayReels(reelItems);
+    }
+  }, [reelItems, displayReels]);
 
   useEffect(() => {
-    if (!isSpinning) return;
+    if (!isSpinning) {
+      setReelRotations([0, 0, 0]);
+      return;
+    }
 
     const pendingTasks = tasks.filter((t) => !t.completed);
 
-    setSelectedResult(null);
-
-    // Determine the result based on weighted probability
-    const category = selectWeightedCategory(pendingTasks.length);
-
-    // Determine what to display
+    // Determine result
+    const category = selectWeightedCategory(pendingTasks.length, leisureTitles);
     let displayResult: string = category;
 
     if (category === "Tasks" && pendingTasks.length > 0) {
@@ -77,44 +92,45 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
       displayResult = randomTask.title;
     }
 
-    // Find the index of the result in the reels
-    const categoryIndex = displayReels[0].indexOf(displayResult);
-    const adjustedIndex = categoryIndex >= 0 ? categoryIndex : 0;
+    // Find target positions in each reel
+    const rotations = displayReels.map((reel) => {
+      // Find the first occurrence of the result
+      const resultIndex = reel.findIndex(item => item.title === displayResult);
+      const targetIndex = resultIndex >= 0 ? resultIndex : 0;
 
-    // Generate random rotations for each reel with slight offset
-    const rotations = [
-      -SPIN_DURATION * (isLarge ? 110 : 70) + (adjustedIndex * (isLarge ? 110 : 70)),
-      -SPIN_DURATION * (isLarge ? 110 : 70) + (adjustedIndex * (isLarge ? 110 : 70)) - (isLarge ? 33 : 20),
-      -SPIN_DURATION * (isLarge ? 110 : 70) + (adjustedIndex * (isLarge ? 110 : 70)) - (isLarge ? 66 : 40),
-    ];
+      // Calculate: we want the item at targetIndex to sit at position index 1 (middle)
+      // Currently, items at index 0, 1, 2 are visible
+      // We need to move so that targetIndex becomes index 1
+      const spinDistance = (targetIndex - 1) * itemSize;
+
+      // Add multiple full spins before landing
+      const fullSpins = 8;
+      const totalDistance = fullSpins * reel.length * itemSize + spinDistance;
+
+      return -totalDistance;
+    });
 
     setReelRotations(rotations);
 
-    // After spin duration, show result
+    // Call onComplete at end of animation
     const timer = setTimeout(() => {
-      setSelectedResult(displayResult);
       onComplete(displayResult);
     }, SPIN_DURATION * 1000);
 
     return () => clearTimeout(timer);
-  }, [isSpinning, tasks, onComplete, isLarge, displayReels]);
+  }, [isSpinning, tasks, leisures, leisureTitles, displayReels, onComplete, itemSize]);
 
   const itemHeightClass = isLarge ? "h-24" : "h-12";
   const itemTextClass = isLarge ? "text-2xl" : "text-sm";
-  const resultTextClass = isLarge ? "text-4xl" : "text-2xl";
   const gapClass = isLarge ? "gap-4" : "gap-3";
 
   return (
     <div className={`flex flex-col items-center justify-center gap-8 py-8 ${isLarge ? "w-full" : ""}`}>
-      {/* Reel Machine Container - Casino Style */}
       <div className={`relative overflow-hidden bg-gradient-to-b from-gray-800 to-gray-900 border-8 border-yellow-600 rounded-2xl p-8 w-full max-w-2xl shadow-2xl flex justify-center items-center`}>
-        {/* Top Bezel */}
         <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-yellow-500 to-yellow-700 rounded-t-2xl pointer-events-none z-30" />
 
-        {/* Inner Glass Reflection */}
         <div className="absolute top-8 left-0 right-0 h-12 bg-gradient-to-b from-white via-transparent to-transparent opacity-20 pointer-events-none z-20" />
 
-        {/* Middle Indicator Line */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none w-full flex justify-center">
           <div className={`flex items-center justify-center gap-8 w-full px-8`}>
             <div className="h-1 flex-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent" />
@@ -125,7 +141,6 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
           </div>
         </div>
 
-        {/* Three Reels Container */}
         <div className={`flex justify-center items-start gap-6 relative z-10`}>
           {[0, 1, 2].map((reelIndex) => (
             <div
@@ -133,10 +148,9 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
               className="relative overflow-hidden bg-gray-950 border-4 border-yellow-500 rounded-lg flex flex-col items-center"
               style={{
                 width: isLarge ? "140px" : "100px",
-                height: isLarge ? "260px" : "160px",
+                height: isLarge ? `${3 * (ITEM_HEIGHT_LARGE + GAP_LARGE)}px` : `${3 * (ITEM_HEIGHT_SMALL + GAP_SMALL)}px`,
               }}
             >
-              {/* Reel Items */}
               <motion.div
                 animate={
                   isSpinning
@@ -145,16 +159,16 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
                 }
                 transition={{
                   duration: SPIN_DURATION,
-                  ease: "easeOut",
+                  ease: [0.25, 0.46, 0.45, 0.94],
                 }}
                 className={`flex flex-col ${gapClass}`}
               >
                 {displayReels[reelIndex].map((item, idx) => (
                   <div
                     key={`${reelIndex}-${idx}`}
-                    className={`${itemHeightClass} flex items-center justify-center ${itemTextClass} font-black text-white bg-gradient-to-b from-blue-600 to-blue-800 rounded-lg border-3 border-yellow-500 drop-shadow-lg flex-shrink-0 w-full px-2 text-center line-clamp-2`}
+                    className={`${itemHeightClass} flex items-center justify-center ${itemTextClass} font-black text-white bg-gradient-to-b from-blue-600 to-blue-800 rounded-lg border-3 border-yellow-500 drop-shadow-lg flex-shrink-0 w-full px-2 text-center`}
                   >
-                    {item}
+                    {item.emoji}
                   </div>
                 ))}
               </motion.div>
@@ -162,13 +176,9 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
           ))}
         </div>
 
-        {/* Bottom Bezel */}
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-yellow-500 to-yellow-700 rounded-b-2xl pointer-events-none z-30" />
       </div>
 
-      {/* Result Display - Removed to avoid redundancy, shown as popup instead */}
-
-      {/* Spinning Indicator */}
       {isSpinning && (
         <motion.div
           animate={{ rotate: 360 }}
@@ -179,4 +189,3 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
     </div>
   );
 }
-

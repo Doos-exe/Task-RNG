@@ -4,16 +4,18 @@ import { useState } from "react";
 import { useTaskStore, Task } from "@/lib/store";
 
 export default function TasksPage() {
-  const { tasks, addTask, removeTask } = useTaskStore();
+  const { tasks, addTask, removeTask, updateTaskEmoji } = useTaskStore();
   const [input, setInput] = useState("");
+  const [emoji, setEmoji] = useState("✓");
   const [selectedPriority, setSelectedPriority] = useState<
     "low" | "medium" | "high"
   >("medium");
 
   const handleAdd = () => {
     if (input.trim()) {
-      addTask(input.trim(), selectedPriority);
+      addTask(input.trim(), selectedPriority, emoji);
       setInput("");
+      setEmoji("✓");
     }
   };
 
@@ -62,6 +64,14 @@ export default function TasksPage() {
               className="flex-1 px-4 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-300 outline-none focus:border-yellow-400 dark:focus:border-yellow-400 transition font-semibold"
               style={{ fontFamily: "Courier New, monospace" }}
             />
+            <input
+              type="text"
+              value={emoji}
+              onChange={(e) => setEmoji(e.target.value.slice(0, 2))}
+              maxLength={2}
+              placeholder="😊"
+              className="w-16 px-2 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white text-center font-semibold"
+            />
             <button
               onClick={handleAdd}
               disabled={!input.trim()}
@@ -95,7 +105,10 @@ export default function TasksPage() {
           <table className="w-full border-collapse border-2 border-white dark:border-white">
             <thead>
               <tr className="border-2 border-white dark:border-white bg-white dark:bg-gray-700">
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                  Emoji
+                </th>
+                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
                   Tasks
                 </th>
                 <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
@@ -106,7 +119,7 @@ export default function TasksPage() {
             <tbody>
               {pendingTasks.length === 0 ? (
                 <tr className="border-2 border-white dark:border-white">
-                  <td colSpan={2} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
+                  <td colSpan={3} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
                     No tasks yet. Add one to get started!
                   </td>
                 </tr>
@@ -117,6 +130,15 @@ export default function TasksPage() {
                     className="border-2 border-white dark:border-white dark:bg-gray-600 hover:opacity-90 transition"
                     style={{ backgroundColor: "#1a3a32" }}
                   >
+                    <td className="px-6 py-4 border-r-2 border-white dark:border-white text-center font-bold text-2xl" style={{ fontFamily: "Courier New, monospace" }}>
+                      <input
+                        type="text"
+                        value={task.emoji}
+                        onChange={(e) => updateTaskEmoji(task.id, e.target.value.slice(0, 2))}
+                        maxLength={2}
+                        className="w-12 px-1 py-1 border-2 border-yellow-400 rounded bg-gray-700 text-white text-center font-semibold"
+                      />
+                    </td>
                     <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
                       <div className="flex justify-between items-center">
                         <span>{task.title}</span>
