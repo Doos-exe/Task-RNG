@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTaskStore, Leisure } from "@/lib/store";
+import EmojiPicker from "@/components/EmojiPicker";
 
 export default function PersonalizedPage() {
   const { leisures, addLeisure, removeLeisure, updateLeisure, updateLeisureEmoji } = useTaskStore();
@@ -53,14 +54,7 @@ export default function PersonalizedPage() {
               className="flex-1 px-4 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-300 outline-none focus:border-yellow-400 dark:focus:border-yellow-400 transition font-semibold"
               style={{ fontFamily: "Courier New, monospace" }}
             />
-            <input
-              type="text"
-              value={emoji}
-              onChange={(e) => setEmoji(e.target.value.slice(0, 2))}
-              maxLength={2}
-              placeholder="😊"
-              className="w-16 px-2 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white text-center font-semibold"
-            />
+            <EmojiPicker value={emoji} onChange={setEmoji} />
             <button
               onClick={handleAdd}
               disabled={!input.trim()}
@@ -102,13 +96,7 @@ export default function PersonalizedPage() {
                     style={{ backgroundColor: "#1a3a32" }}
                   >
                     <td className="px-6 py-4 border-r-2 border-white dark:border-white text-center font-bold text-2xl">
-                      <input
-                        type="text"
-                        value={leisure.emoji}
-                        onChange={(e) => updateLeisureEmoji(leisure.id, e.target.value.slice(0, 2))}
-                        maxLength={2}
-                        className="w-12 px-1 py-1 border-2 border-yellow-400 rounded bg-gray-700 text-white text-center font-semibold"
-                      />
+                      <EmojiPicker value={leisure.emoji} onChange={(newEmoji) => updateLeisureEmoji(leisure.id, newEmoji)} />
                     </td>
                     <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
                       {editingId === leisure.id ? (
