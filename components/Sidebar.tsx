@@ -1,7 +1,39 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
+
+const EMOJIS = ["🎲", "🎮", "🎯", "🎪", "🎨", "🎭", "🎬", "🎤", "🎧", "🎸", "🎹", "🏆", "💎", "⭐", "✨", "🔥", "💫", "🎰", "🃏", "🌟"];
+
+function SlotMachineReel({ speed = 1 }) {
+  // Create a long list of repeated emojis for seamless scrolling
+  const reelEmojis = Array(50).fill(EMOJIS).flat();
+
+  return (
+    <div className="flex-1 h-full border-4 border-yellow-500 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-md shadow-md overflow-hidden flex items-center justify-center">
+      <motion.div
+        animate={{ y: 2000 }}
+        transition={{
+          duration: 20 / speed,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="flex flex-col gap-2"
+        style={{ y: -2000 }}
+      >
+        {reelEmojis.map((emoji, idx) => (
+          <div
+            key={idx}
+            className="text-4xl font-black text-center"
+          >
+            {emoji}
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
 
 export function Sidebar() {
   return (
@@ -30,18 +62,12 @@ export function Sidebar() {
         <ThemeToggle />
       </div>
 
-      {/* Symbol Placeholders Section - 3 Horizontally */}
-      <div className="flex-1 flex flex-col items-center justify-center px-3 py-8">
+      {/* Middle: Slot Machine Reels - 3 Horizontally */}
+      <div className="flex-1 flex flex-col items-center justify-center px-3 py-8 min-h-0">
         <div className="flex gap-3 justify-center items-center h-full w-full">
-          <div className="flex-1 h-full border-4 border-yellow-500 bg-gray-300 flex items-center justify-center rounded-md">
-            <p className="text-xs font-black text-center">SYMBOL</p>
-          </div>
-          <div className="flex-1 h-full border-4 border-yellow-500 bg-gray-300 flex items-center justify-center rounded-md">
-            <p className="text-xs font-black text-center">SYMBOL</p>
-          </div>
-          <div className="flex-1 h-full border-4 border-yellow-500 bg-gray-300 flex items-center justify-center rounded-md">
-            <p className="text-xs font-black text-center">SYMBOL</p>
-          </div>
+          <SlotMachineReel speed={1} />
+          <SlotMachineReel speed={0.8} />
+          <SlotMachineReel speed={1.2} />
         </div>
       </div>
 

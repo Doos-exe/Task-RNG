@@ -8,7 +8,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/store";
 
 export default function SpinPage() {
-  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures, checkAndResetSkipCostIfNewDay, taskConsecutiveCount, leisureConsecutiveCount } = useTaskStore();
+  const { coins, addCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures, checkAndResetSkipCostIfNewDay, taskConsecutiveCount, leisureConsecutiveCount, startTimer, clearTimer } = useTaskStore();
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentResult, setCurrentResult] = useState<string | null>(null);
   const [timerActive, setTimerActive] = useState(false);
@@ -26,6 +26,17 @@ export default function SpinPage() {
   useEffect(() => {
     checkAndResetSkipCostIfNewDay();
   }, [checkAndResetSkipCostIfNewDay]);
+
+  // Start timer in store when result is ready
+  useEffect(() => {
+    if (timerActive && currentResult) {
+      const isTask = !leisures.some(l => l.title === currentResult);
+      const priority = isTask
+        ? tasks.find(t => t.title === currentResult)?.priority || "medium"
+        : "medium";
+      startTimer(currentResult, isTask, priority);
+    }
+  }, [timerActive, currentResult, tasks, leisures, startTimer]);
 
   const handleSpinComplete = useCallback((result: string) => {
     // Delay everything until after animation completes
@@ -72,6 +83,7 @@ export default function SpinPage() {
       setShowSkipConfirm(false);
       setCurrentResult(null);
       setTimerActive(false);
+      clearTimer();
     }
   };
 
@@ -94,17 +106,13 @@ export default function SpinPage() {
       setShowCollectConfirm(false);
       setCurrentResult(null);
       setTimerActive(false);
-    }
-  };
-
-  const handleResetCoins = () => {
-    if (confirm("Are you sure you want to reset your coins to 0?")) {
-      resetCoins();
+      clearTimer();
     }
   };
 
   const handleTaskComplete = () => {
     setTimerActive(false);
+    clearTimer();
   };
 
   const isTaskResult = currentResult && !leisures.some(l => l.title === currentResult);
@@ -125,13 +133,6 @@ export default function SpinPage() {
             {/* Coins on Far Left */}
             <div className="flex flex-col items-center gap-1 flex-shrink-0">
               <p className="text-xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>💰 {coins}</p>
-              <button
-                onClick={handleResetCoins}
-                className="text-xs font-bold text-gray-500 hover:text-red-600 transition uppercase tracking-widest"
-                style={{ fontFamily: "Courier New, monospace" }}
-              >
-                Reset
-              </button>
             </div>
 
             {/* Title in Center */}

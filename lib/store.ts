@@ -18,6 +18,14 @@ export interface Leisure {
   isDefault: boolean;
 }
 
+export interface ActiveTimer {
+  result: string;
+  isTask: boolean;
+  taskPriority?: "low" | "medium" | "high";
+  startTime: number;
+  duration: number; // in seconds
+}
+
 interface TaskStore {
   tasks: Task[];
   leisures: Leisure[];
@@ -28,6 +36,7 @@ interface TaskStore {
   spinHistory: string[];
   taskConsecutiveCount: number;
   leisureConsecutiveCount: number;
+  activeTimer: ActiveTimer | null;
   addTask: (title: string, priority?: "low" | "medium" | "high", emoji?: string) => void;
   removeTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -48,6 +57,8 @@ interface TaskStore {
   getLeisures: () => Leisure[];
   addToSpinHistory: (item: string) => void;
   recordSpinOutcome: (isTask: boolean) => void;
+  startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high") => void;
+  clearTimer: () => void;
 }
 
 const DEFAULT_LEISURES: Leisure[] = [
@@ -79,6 +90,7 @@ export const useTaskStore = create<TaskStore>()(
       spinHistory: [],
       taskConsecutiveCount: 0,
       leisureConsecutiveCount: 0,
+      activeTimer: null,
 
   addTask: (title: string, priority?: "low" | "medium" | "high", emoji: string = "✓") =>
     set((state) => ({
@@ -238,6 +250,47 @@ export const useTaskStore = create<TaskStore>()(
               taskConsecutiveCount: 0,
             };
           }
+        });
+      },
+
+      startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high") => {
+        let duration = 0;
+
+        if (result === "Rest" || result === "Game") {
+          // Randomize between 30, 45, or 60 minutes
+          const options = [30, 45, 60];
+          const randomIndex = Math.floor(Math.random() * options.length);
+          duration = options[randomIndex] * 60; // Convert to seconds
+        } else if (isTask) {
+          // For Tasks, use priority to determine duration
+          if (taskPriority === "low") {
+            duration = 30 * 60;
+          } else if (taskPriority === "medium") {
+            duration = 45 * 60;
+          } else if (taskPriority === "high") {
+            duration = 60 * 60;
+          } else {
+            duration = 45 * 60; // Default to medium
+          }
+        } else {
+          // Default leisure duration
+          duration = 45 * 60;
+        }
+
+        set({
+          activeTimer: {
+            result,
+            isTask,
+            taskPriority,
+            startTime: Date.now(),
+            duration,
+          },
+        });
+      },
+
+      clearTimer: () => {
+        set({
+          activeTimer: null,
         });
       },
     }),

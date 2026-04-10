@@ -12,14 +12,14 @@ export default function Home() {
           <PokerChip label="SPIN" href="/spin" />
         </div>
 
-        {/* TASKS - Top Right */}
+        {/* BET - Top Right */}
         <div className="absolute top-1/4 right-1/4 translate-x-1/2 -translate-y-1/2">
-          <PokerChip label="TASKS" href="/tasks" />
+          <PokerChip label="BET" href="/tasks" />
         </div>
 
-        {/* CUSTOMIZE - Center */}
+        {/* ROLL - Center */}
         <div className="absolute left-1/3 bottom-1/4 -translate-x-1/2 translate-y-1/2">
-          <PokerChip label="CUSTOMIZE" href="/personalized" />
+          <PokerChip label="ROLL" href="/roll" />
         </div>
 
         {/* ABOUT - Bottom Right */}

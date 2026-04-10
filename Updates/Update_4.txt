@@ -3,14 +3,24 @@ Date: 04/10/26
 Updates:
 - Pity System
 - UI Change in Spin Page
+- Added new "Roll" system
+  - Users choose what they want and fight the system
+- Renamed "Tasks" to "Bet"
+  - Moved the "Customized" to "Bet"
 
 
 To Update:
 - Spin Page
   - Fix the Animation
-- Task and Personalized Page
+  - Timer should not reset
+- Bet Page
   - Fix the UI
+  -  Emoji out of bounds on the top
+- Roll Page
+  - Fix the UI
+  - Timer should not reset
+  - Draw Dice elements
 - About Page
   - Rewrite 
 - Add sound effects
-- Draw elements for the UI
+- Logo
