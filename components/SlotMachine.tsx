@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
-import { selectWeightedCategory, Category } from "@/lib/probability";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { selectWeightedCategory, Category, filterPityItems, selectWeightedItem, checkForcedCategory } from "@/lib/probability";
 import { useTaskStore } from "@/lib/store";
 
 interface SlotMachineProps {
@@ -20,8 +20,14 @@ const GAP_SMALL = 12;
 export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMachineProps) {
   const tasks = useTaskStore((state) => state.tasks);
   const leisures = useTaskStore((state) => state.leisures);
+  const spinHistory = useTaskStore((state) => state.spinHistory);
+  const taskConsecutiveCount = useTaskStore((state) => state.taskConsecutiveCount);
+  const leisureConsecutiveCount = useTaskStore((state) => state.leisureConsecutiveCount);
+  const addToSpinHistory = useTaskStore((state) => state.addToSpinHistory);
+  const recordSpinOutcome = useTaskStore((state) => state.recordSpinOutcome);
   const [reelRotations, setReelRotations] = useState([0, 0, 0]);
   const [displayReels, setDisplayReels] = useState<Array<{ title: string; emoji: string }[]>>([[], [], []]);
+  const recordedOutcomeRef = useRef(false);
 
   const isLarge = size === "large";
   const itemHeight = isLarge ? ITEM_HEIGHT_LARGE : ITEM_HEIGHT_SMALL;
@@ -78,18 +84,48 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
   useEffect(() => {
     if (!isSpinning) {
       setReelRotations([0, 0, 0]);
+      recordedOutcomeRef.current = false;
       return;
     }
 
     const pendingTasks = tasks.filter((t) => !t.completed);
 
-    // Determine result
-    const category = selectWeightedCategory(pendingTasks.length, leisureTitles);
-    let displayResult: string = category;
+    // Determine result with pity system
+    let displayResult: string = "";
+    let isTaskResult = false;
+
+    // Check if a category should be forced (4 consecutive = guarantee opposite)
+    const forcedCategory = checkForcedCategory(taskConsecutiveCount, leisureConsecutiveCount);
+
+    let category: Category;
+    if (forcedCategory) {
+      category = forcedCategory;
+    } else {
+      // Normal weighted selection
+      category = selectWeightedCategory(pendingTasks.length, leisureTitles);
+    }
 
     if (category === "Tasks" && pendingTasks.length > 0) {
-      const randomTask = pendingTasks[Math.floor(Math.random() * pendingTasks.length)];
-      displayResult = randomTask.title;
+      const availableTasks = filterPityItems(
+        pendingTasks.map(t => t.title),
+        spinHistory
+      );
+      displayResult = availableTasks.length > 0
+        ? availableTasks[Math.floor(Math.random() * availableTasks.length)]
+        : pendingTasks[Math.floor(Math.random() * pendingTasks.length)].title;
+      isTaskResult = true;
+    } else if (category !== "Tasks" && leisureTitles.length > 0) {
+      const availableLeisures = filterPityItems(leisureTitles, spinHistory);
+      displayResult = availableLeisures.length > 0
+        ? availableLeisures[Math.floor(Math.random() * availableLeisures.length)]
+        : leisureTitles[Math.floor(Math.random() * leisureTitles.length)];
+      isTaskResult = false;
+    }
+
+    // Record outcome only once per spin
+    if (!recordedOutcomeRef.current) {
+      recordedOutcomeRef.current = true;
+      recordSpinOutcome(isTaskResult);
     }
 
     // Find target positions in each reel
@@ -114,11 +150,12 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
 
     // Call onComplete at end of animation
     const timer = setTimeout(() => {
+      addToSpinHistory(displayResult);
       onComplete(displayResult);
     }, SPIN_DURATION * 1000);
 
     return () => clearTimeout(timer);
-  }, [isSpinning, tasks, leisures, leisureTitles, displayReels, onComplete, itemSize]);
+  }, [isSpinning, tasks, leisures, onComplete, itemSize, spinHistory, addToSpinHistory, recordSpinOutcome]);
 
   const itemHeightClass = isLarge ? "h-24" : "h-12";
   const itemTextClass = isLarge ? "text-2xl" : "text-sm";

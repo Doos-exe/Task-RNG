@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { SlotMachine } from "@/components/SlotMachine";
 import { InteractiveHandle } from "@/components/InteractiveHandle";
 import { ResultTimer } from "@/components/ResultTimer";
@@ -8,7 +8,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/store";
 
 export default function SpinPage() {
-  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures } = useTaskStore();
+  const { coins, addCoins, resetCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures, checkAndResetSkipCostIfNewDay, taskConsecutiveCount, leisureConsecutiveCount } = useTaskStore();
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentResult, setCurrentResult] = useState<string | null>(null);
   const [timerActive, setTimerActive] = useState(false);
@@ -21,6 +21,11 @@ export default function SpinPage() {
 
   const pendingTasks = pendingCount();
   const canSpin = pendingTasks > 0 || coins > 0;
+
+  // Check if skip cost needs to be reset on a new day
+  useEffect(() => {
+    checkAndResetSkipCostIfNewDay();
+  }, [checkAndResetSkipCostIfNewDay]);
 
   const handleSpinComplete = useCallback((result: string) => {
     // Delay everything until after animation completes
@@ -112,36 +117,70 @@ export default function SpinPage() {
 
   return (
     <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
-      <div className="flex flex-col items-center justify-center min-h-screen -ml-64">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-16 w-full px-8">
-          <div className="flex-1" />
-          <h1 className="text-5xl font-black tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>🎰 TASK RNG</h1>
-          <div className="flex-1 text-right flex items-center gap-6 justify-end">
-            <div>
-              <p className="text-2xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>💰 {coins} Coins</p>
+      <div className="flex flex-col items-center justify-start min-h-screen -ml-64 pt-4">
+        {/* Header - Compact and Centered */}
+        <div className="flex flex-col items-center gap-4 mb-8 w-full">
+          {/* Top Row: Coins | Title | Pity System */}
+          <div className="flex justify-between items-center gap-8 w-full px-8">
+            {/* Coins on Far Left */}
+            <div className="flex flex-col items-center gap-1 flex-shrink-0">
+              <p className="text-xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>💰 {coins}</p>
               <button
                 onClick={handleResetCoins}
-                className="text-xs font-bold text-gray-500 hover:text-red-600 transition mt-1 uppercase tracking-widest"
+                className="text-xs font-bold text-gray-500 hover:text-red-600 transition uppercase tracking-widest"
                 style={{ fontFamily: "Courier New, monospace" }}
               >
-                Reset Coins
+                Reset
               </button>
+            </div>
+
+            {/* Title in Center */}
+            <h1 className="text-4xl font-black tracking-wider flex-shrink-0" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>🎰 TASK RNG</h1>
+
+            {/* Pity System on Far Right - Progress Bars */}
+            <div className="flex flex-col gap-2 flex-shrink-0">
+              <p className="text-xs font-black text-purple-500 uppercase tracking-widest text-right" style={{ fontFamily: "Courier New, monospace" }}>
+                🛡️ Pity
+              </p>
+
+              {/* Tasks Progress Bar */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black">📋</span>
+                <div className="w-32 h-6 bg-gray-700 border-2 border-blue-500 rounded-lg overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300"
+                    style={{ width: `${(taskConsecutiveCount / 4) * 100}%` }}
+                  />
+                </div>
+                <span className="text-xs font-black text-blue-400 w-4 text-right">{taskConsecutiveCount}</span>
+              </div>
+
+              {/* Leisures Progress Bar */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black">🎮</span>
+                <div className="w-32 h-6 bg-gray-700 border-2 border-purple-500 rounded-lg overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-300"
+                    style={{ width: `${(leisureConsecutiveCount / 4) * 100}%` }}
+                  />
+                </div>
+                <span className="text-xs font-black text-purple-400 w-4 text-right">{leisureConsecutiveCount}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* No Tasks Warning */}
-        {hasNoPendingTasks && !currentResult && (
-          <div className="mb-8 p-6 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center" suppressHydrationWarning>
-            <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200" style={{ fontFamily: "Courier New, monospace" }}>
-              ⚠️ No pending tasks! Add tasks to continue spinning.
-            </p>
-          </div>
-        )}
-
         {/* Main Slot Machine Area - Centered */}
         <div className="flex flex-col items-center justify-center gap-16 w-full relative" suppressHydrationWarning>
+          {/* No Tasks Warning */}
+          {hasNoPendingTasks && !currentResult && (
+            <div className="mb-8 p-6 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center" suppressHydrationWarning>
+              <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200" style={{ fontFamily: "Courier New, monospace" }}>
+                ⚠️ No pending tasks! Add tasks to continue spinning.
+              </p>
+            </div>
+          )}
+
           {/* Slot Machine with Handle - Casino Style */}
           <div className={`flex items-center gap-16 transition-all duration-300`}>
             {/* Handle on Left */}

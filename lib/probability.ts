@@ -1,7 +1,50 @@
 /**
- * Weighted Probability Logic for Fate-Tasker
- * Calculates probabilities based on task load and generates random selections
+ * Filter out recently spun items to implement a pity system
+ * @param items Available items to pick from
+ * @param spinHistory Recent spin results
+ * @returns Filtered items excluding recent spins, or all items if all were recent
  */
+export function filterPityItems(items: string[], spinHistory: string[]): string[] {
+  if (spinHistory.length === 0 || items.length <= 1) {
+    return items;
+  }
+
+  const filtered = items.filter(item => !spinHistory.includes(item));
+
+  // If all items were recent, allow all items again
+  return filtered.length > 0 ? filtered : items;
+}
+
+/**
+ * Check if a category should be forced due to consecutive count threshold (4 = 25% rate)
+ * @param taskConsecutiveCount Number of consecutive task outcomes
+ * @param leisureConsecutiveCount Number of consecutive leisure outcomes
+ * @returns "Tasks", "Leisure", or null if no forced outcome
+ */
+export function checkForcedCategory(
+  taskConsecutiveCount: number,
+  leisureConsecutiveCount: number
+): "Tasks" | "Leisure" | null {
+  if (taskConsecutiveCount >= 4) {
+    return "Leisure";
+  }
+  if (leisureConsecutiveCount >= 4) {
+    return "Tasks";
+  }
+  return null;
+}
+
+
+/**
+ * Select a weighted random item from available options with pity protection
+ * @param items Available items
+ * @param spinHistory Recent spin results
+ * @returns Selected item
+ */
+export function selectWeightedItem(items: string[], spinHistory: string[] = []): string {
+  const available = filterPityItems(items, spinHistory);
+  return available[Math.floor(Math.random() * available.length)];
+}
 
 export type Category = "Tasks" | string; // String covers leisure items
 

@@ -25,6 +25,9 @@ interface TaskStore {
   theme: "light" | "dark";
   lastSpinSkipDate: string;
   currentSkipCost: number;
+  spinHistory: string[];
+  taskConsecutiveCount: number;
+  leisureConsecutiveCount: number;
   addTask: (title: string, priority?: "low" | "medium" | "high", emoji?: string) => void;
   removeTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -35,6 +38,7 @@ interface TaskStore {
   spendCoins: (amount: number) => boolean;
   resetCoins: () => void;
   getSkipCost: () => number;
+  checkAndResetSkipCostIfNewDay: () => void;
   useSkip: () => boolean;
   setTheme: (theme: "light" | "dark") => void;
   addLeisure: (title: string) => void;
@@ -42,6 +46,8 @@ interface TaskStore {
   updateLeisure: (id: string, title: string) => void;
   updateLeisureEmoji: (id: string, emoji: string) => void;
   getLeisures: () => Leisure[];
+  addToSpinHistory: (item: string) => void;
+  recordSpinOutcome: (isTask: boolean) => void;
 }
 
 const DEFAULT_LEISURES: Leisure[] = [
@@ -70,6 +76,9 @@ export const useTaskStore = create<TaskStore>()(
       theme: "light",
       lastSpinSkipDate: "",
       currentSkipCost: 1,
+      spinHistory: [],
+      taskConsecutiveCount: 0,
+      leisureConsecutiveCount: 0,
 
   addTask: (title: string, priority?: "low" | "medium" | "high", emoji: string = "✓") =>
     set((state) => ({
@@ -138,6 +147,10 @@ export const useTaskStore = create<TaskStore>()(
         }),
 
       getSkipCost: () => {
+        return get().currentSkipCost;
+      },
+
+      checkAndResetSkipCostIfNewDay: () => {
         const today = new Date().toDateString();
         const lastDate = get().lastSpinSkipDate;
 
@@ -147,10 +160,7 @@ export const useTaskStore = create<TaskStore>()(
             lastSpinSkipDate: today,
             currentSkipCost: 1,
           });
-          return 1;
         }
-
-        return get().currentSkipCost;
       },
 
       useSkip: () => {
@@ -207,6 +217,28 @@ export const useTaskStore = create<TaskStore>()(
 
       getLeisures: () => {
         return get().leisures;
+      },
+
+      addToSpinHistory: (item: string) => {
+        set((state) => ({
+          spinHistory: [item, ...state.spinHistory].slice(0, 3),
+        }));
+      },
+
+      recordSpinOutcome: (isTask: boolean) => {
+        set((state) => {
+          if (isTask) {
+            return {
+              taskConsecutiveCount: state.taskConsecutiveCount + 1,
+              leisureConsecutiveCount: 0,
+            };
+          } else {
+            return {
+              leisureConsecutiveCount: state.leisureConsecutiveCount + 1,
+              taskConsecutiveCount: 0,
+            };
+          }
+        });
       },
     }),
     {
