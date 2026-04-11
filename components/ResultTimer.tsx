@@ -12,56 +12,37 @@ interface ResultTimerProps {
 }
 
 export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }: ResultTimerProps) {
-  const { addCoins, pendingCount } = useTaskStore();
+  const { activeTimer, clearTimer } = useTaskStore();
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
-  const [isActive, setIsActive] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
-  const [isTask, setIsTask] = useState(false);
 
-  // Determine time based on result
+  // Sync with store's timer
   useEffect(() => {
-    if (!result) return;
-
-    let duration = 0;
-    const isTaskResult = result !== "Rest" && result !== "Game";
-    setIsTask(isTaskResult);
-
-    if (result === "Rest" || result === "Game") {
-      // Randomize between 30, 45, or 60 minutes
-      const options = [30, 45, 60];
-      const randomIndex = Math.floor(Math.random() * options.length);
-      duration = options[randomIndex] * 60; // Convert to seconds
-    } else {
-      // For Tasks, use priority to determine duration
-      if (taskPriority === "low") {
-        duration = 30 * 60;
-      } else if (taskPriority === "medium") {
-        duration = 45 * 60;
-      } else if (taskPriority === "high") {
-        duration = 60 * 60;
-      } else {
-        duration = 45 * 60; // Default to medium
-      }
+    if (activeTimer) {
+      const elapsed = (Date.now() - activeTimer.startTime) / 1000;
+      const remaining = Math.max(0, activeTimer.duration - elapsed);
+      setTimeLeft(Math.ceil(remaining));
+      setTotalTime(activeTimer.duration);
     }
-
-    setTotalTime(duration);
-    setTimeLeft(duration);
-    setIsActive(isStarted);
-    setShowCompletion(false);
-  }, [result, isStarted, taskPriority]);
+  }, [activeTimer]);
 
   // Timer countdown
   useEffect(() => {
-    if (!isActive || timeLeft <= 0) {
-      if (isActive && timeLeft <= 0 && result) {
-        setIsActive(false);
+    if (!activeTimer) return;
+
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - activeTimer.startTime) / 1000;
+      const remaining = Math.max(0, activeTimer.duration - elapsed);
+
+      setTimeLeft(Math.ceil(remaining));
+
+      if (remaining <= 0) {
+        clearInterval(interval);
         setShowCompletion(true);
 
-        // Give coins if it's a task and there are pending tasks
-        if (isTask && pendingCount() > 0) {
-          addCoins(1);
-        }
+        // Clear the timer from store so user can spin/roll again
+        clearTimer();
 
         if (onTaskComplete) {
           onTaskComplete();
@@ -71,23 +52,13 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
         const hideTimer = setTimeout(() => {
           setShowCompletion(false);
         }, 3000);
+
         return () => clearTimeout(hideTimer);
       }
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          setIsActive(false);
-          return 0;
-        }
-        return prev - 1;
-      });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, result, isTask, pendingCount, addCoins, onTaskComplete]);
+  }, [activeTimer, clearTimer, onTaskComplete]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -102,9 +73,12 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
 
   const progressPercent = totalTime > 0 ? (timeLeft / totalTime) * 100 : 0;
 
-  if (!result) {
+  if (!activeTimer) {
     return null;
   }
+
+  const isTask = activeTimer.isTask;
+  const timerLabel = activeTimer.result === "Rest" ? "Time to Rest" : activeTimer.result === "Game" ? "Game Time" : "Task Duration";
 
   return (
     <>
@@ -118,7 +92,7 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
         <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-600 rounded-2xl p-8 shadow-2xl min-w-64 text-center">
           {/* Activity Type */}
           <p className="text-sm font-black text-yellow-400 uppercase tracking-widest mb-2">
-            {result === "Rest" ? "Time to Rest" : result === "Game" ? "Game Time" : "Task Duration"}
+            {timerLabel}
           </p>
 
           {/* Time Display */}
@@ -137,8 +111,16 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
 
           {/* Status */}
           <p className="text-xs font-bold text-yellow-300 mt-4 uppercase tracking-wider">
-            {isActive ? "⏱️ In Progress" : timeLeft > 0 ? "⏸️ Paused" : "✓ Complete"}
+            {timeLeft > 0 ? "⏱️ In Progress" : "✓ Complete"}
           </p>
+
+          {/* Skip Button for Testing */}
+          <button
+            onClick={() => clearTimer()}
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded font-bold text-xs transition-all"
+          >
+            ⏭️ Skip (Test)
+          </button>
         </div>
       </motion.div>
 
@@ -153,13 +135,11 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
           >
             <div className="bg-gradient-to-br from-green-600 to-green-800 border-4 border-green-400 rounded-2xl px-8 py-4 shadow-2xl text-center">
               <p className="text-2xl font-black text-white">
-                {isTask ? "✓ Task Complete!" : "✓ Time's Up!"}
+                {activeTimer.isTask ? "✓ Task Complete!" : "✓ Time's Up!"}
               </p>
-              {isTask && pendingCount() > 0 && (
-                <p className="text-xl font-black text-green-300 mt-2">
-                  +1 💰 Coin!
-                </p>
-              )}
+              <p className="text-lg font-bold text-green-200 mt-2">
+                You can now spin/roll again freely 🎲
+              </p>
             </div>
           </motion.div>
         )}

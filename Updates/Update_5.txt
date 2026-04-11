@@ -1,0 +1,24 @@
+Date: 04/11/26
+
+Updates:
+- Logo
+- Left Side Bar UI change
+- Rewrote the About page
+- Fixed the timer for tasks and leisures
+- Roll Page
+  - Drew the dice elements
+  - UI Change
+
+To Update:
+- Spin Page
+  - Fix the animation
+  - The pity system counter
+- Bet Page
+  - Fix the emoji UI
+  - Align the tables
+- Roll Page
+  - Continue playing error
+- Sound effects
+- Fix the timer UI (make it invisible sometimes)
+- Database and emails sign up & log in
+- Deployment

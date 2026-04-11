@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import logo from "@/Elements/TaskRNG_Logo.png";
 
 const EMOJIS = ["🎲", "🎮", "🎯", "🎪", "🎨", "🎭", "🎬", "🎤", "🎧", "🎸", "🎹", "🏆", "💎", "⭐", "✨", "🔥", "💫", "🎰", "🃏", "🌟"];
 
@@ -48,11 +50,15 @@ export function Sidebar() {
             </h1>
           </div>
 
-          {/* Logo Placeholder */}
+          {/* Logo */}
           <div className="flex justify-center">
-            <div className="w-24 h-24 rounded-full border-4 border-yellow-400 bg-gray-300 flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full border-2 border-yellow-400" />
-            </div>
+            <Image
+              src={logo}
+              alt="TaskRNG Logo"
+              width={96}
+              height={96}
+              priority
+            />
           </div>
         </div>
       </Link>

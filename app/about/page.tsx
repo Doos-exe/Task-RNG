@@ -9,7 +9,7 @@ export default function AboutPage() {
         <div className="bg-white dark:bg-gray-900 rounded-lg p-8 border-2 border-app-lightBorder dark:border-app-darkBorder shadow-lg">
           <h2 className="text-2xl font-bold mb-4 text-app-sidebar">Task RNG</h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6 font-semibold">
-            Task RNG is a task management website with a twist. Instead of manually choosing what to do, let fate decide your tasks using our slot machine! Spin the wheel and get a random task from your to-do list, or a leisure activity if you need a break.
+            A Task Management website with a twist. Instead of manually choosing what to do, gamble and let fate decide your tasks using our system! Spin the slot machine or bet on a dice to get a random task from your to-do list, or a leisure activity for you to take a break.
           </p>
           
           <h3 className="text-xl font-bold mb-4 text-app-sidebar">Features:</h3>
@@ -18,26 +18,26 @@ export default function AboutPage() {
               <span className="font-bold">Task Management:</span> Add, manage, and organize your tasks with priority levels (Low, Medium, High)
             </li>
             <li>
-              <span className="font-bold">Slot Machine RNG:</span> Spin the wheel to randomly select a task or leisure activity based on your workload
+              <span className="font-bold">Slot Machine RNG:</span> Spin the slot machine to randomly select a task or leisure based on what you bet on
             </li>
             <li>
-              <span className="font-bold">Coin System:</span> Earn coins by completing tasks early and use them to re-spin if you don't like the result
+              <span className="font-bold">High-Low RNG:</span> Roll a dice to determine what type of task or leisure you want, fight against the system
             </li>
             <li>
-              <span className="font-bold">Risk Levels:</span> Each task has a risk level that determines the time commitment (Low: 30 mins, Medium: 45 mins, High: 60 mins)
+              <span className="font-bold">Coins System:</span> Earn coins by completing tasks early and use them to re-spin or re-roll if you don't like your luck
             </li>
             <li>
-              <span className="font-bold">Light & Dark Mode:</span> Switch between light and dark themes for comfortable viewing
+              <span className="font-bold">Pity System:</span> Increase your chances of getting the opposite to avoid getting stuck on bad RNG
             </li>
           </ul>
 
           <h3 className="text-xl font-bold mt-8 mb-4 text-app-sidebar">How It Works:</h3>
           <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-3 font-semibold">
-            <li>Add your tasks to the task list with a priority level</li>
-            <li>Visit the Spin page and pull the handle to spin the slot machine</li>
-            <li>The machine will randomly select a task or suggest a break</li>
-            <li>Complete the task and earn coins for early completion</li>
-            <li>Use coins to re-spin if you want a different task</li>
+            <li>Add your tasks and leisures on the Bet page for better management</li>
+            <li>Visit the Spin page or Roll page to bet on your desired outcome</li>
+            <li>Both systems are luck based to determine what you should do with the time being</li>
+            <li>Completing tasks early earns you coins for re-spins or re-rolls</li>
+            <li>Have fun!</li>
           </ol>
         </div>
       </div>

@@ -3,15 +3,13 @@
 import { useState, useCallback, useEffect } from "react";
 import { SlotMachine } from "@/components/SlotMachine";
 import { InteractiveHandle } from "@/components/InteractiveHandle";
-import { ResultTimer } from "@/components/ResultTimer";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/store";
 
 export default function SpinPage() {
-  const { coins, addCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures, checkAndResetSkipCostIfNewDay, taskConsecutiveCount, leisureConsecutiveCount, startTimer, clearTimer } = useTaskStore();
+  const { coins, addCoins, pendingCount, getSkipCost, useSkip, tasks, removeTask, leisures, checkAndResetSkipCostIfNewDay, taskConsecutiveCount, leisureConsecutiveCount, startTimer, clearTimer, activeTimer, recordSpinOutcome } = useTaskStore();
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentResult, setCurrentResult] = useState<string | null>(null);
-  const [timerActive, setTimerActive] = useState(false);
   const [popupResult, setPopupResult] = useState<string | null>(null);
 
   // Confirmation dialogs
@@ -20,30 +18,32 @@ export default function SpinPage() {
   const [showInsufficientCoinsDialog, setShowInsufficientCoinsDialog] = useState(false);
 
   const pendingTasks = pendingCount();
-  const canSpin = pendingTasks > 0 || coins > 0;
+  // Can spin if: (have tasks or coins) AND (no timer OR timer is from this page)
+  const canSpin = (pendingTasks > 0 || coins > 0) && (!activeTimer || activeTimer.source === "spin");
+  const timerActive = !!activeTimer; // Determine if timer is active from store
+  const isTimerFromSpin = activeTimer?.source === "spin"; // Check if timer was from this page
+  const isTimerFromDifferentPage = !!activeTimer && activeTimer.source === "roll"; // Only different if explicitly from roll
 
   // Check if skip cost needs to be reset on a new day
   useEffect(() => {
     checkAndResetSkipCostIfNewDay();
   }, [checkAndResetSkipCostIfNewDay]);
 
-  // Start timer in store when result is ready
-  useEffect(() => {
-    if (timerActive && currentResult) {
-      const isTask = !leisures.some(l => l.title === currentResult);
-      const priority = isTask
-        ? tasks.find(t => t.title === currentResult)?.priority || "medium"
-        : "medium";
-      startTimer(currentResult, isTask, priority);
-    }
-  }, [timerActive, currentResult, tasks, leisures, startTimer]);
-
   const handleSpinComplete = useCallback((result: string) => {
     // Delay everything until after animation completes
     setTimeout(() => {
       setCurrentResult(result);
       setIsSpinning(false);
-      setTimerActive(true);
+
+      // Start timer in store with source="spin"
+      const isTask = !leisures.some(l => l.title === result);
+      const priority = isTask
+        ? tasks.find(t => t.title === result)?.priority || "medium"
+        : "medium";
+      startTimer(result, isTask, priority, "spin");
+
+      // Update pity counter when reward is visible
+      recordSpinOutcome(isTask);
 
       // Show popup immediately after result appears
       setPopupResult(result);
@@ -51,12 +51,16 @@ export default function SpinPage() {
       // Hide popup after 3 seconds
       setTimeout(() => setPopupResult(null), 3000);
     }, 100); // Small delay to ensure animation has settled
-  }, []);
+  }, [leisures, tasks, startTimer, recordSpinOutcome]);
 
   const handleSpin = useCallback(() => {
     if (!isSpinning) {
-      // If timer is active, treat it as a skip attempt
-      if (timerActive) {
+      // If timer is from a different page, prevent spin
+      if (isTimerFromDifferentPage) {
+        return;
+      }
+      // If timer is active but from this page, treat it as a skip attempt
+      if (timerActive && isTimerFromSpin) {
         handleSkipAttempt();
       } else {
         // Normal spin
@@ -66,7 +70,7 @@ export default function SpinPage() {
         }
       }
     }
-  }, [isSpinning, canSpin, timerActive]);
+  }, [isSpinning, canSpin, timerActive, isTimerFromSpin, isTimerFromDifferentPage]);
 
   const handleSkipAttempt = () => {
     const cost = getSkipCost();
@@ -82,7 +86,6 @@ export default function SpinPage() {
     if (useSkip()) {
       setShowSkipConfirm(false);
       setCurrentResult(null);
-      setTimerActive(false);
       clearTimer();
     }
   };
@@ -105,13 +108,11 @@ export default function SpinPage() {
 
       setShowCollectConfirm(false);
       setCurrentResult(null);
-      setTimerActive(false);
       clearTimer();
     }
   };
 
   const handleTaskComplete = () => {
-    setTimerActive(false);
     clearTimer();
   };
 
@@ -182,14 +183,23 @@ export default function SpinPage() {
             </div>
           )}
 
+          {/* Timer from Roll Page Warning */}
+          {isTimerFromDifferentPage && (
+            <div className="mb-8 p-6 bg-red-100 dark:bg-red-900 border-2 border-red-600 rounded-lg text-center" suppressHydrationWarning>
+              <p className="text-lg font-bold text-red-800 dark:text-red-200" style={{ fontFamily: "Courier New, monospace" }}>
+                🎲 Active timer from Roll! Go to Roll page to continue or skip.
+              </p>
+            </div>
+          )}
+
           {/* Slot Machine with Handle - Casino Style */}
           <div className={`flex items-center gap-16 transition-all duration-300`}>
             {/* Handle on Left */}
             <InteractiveHandle
               onSpin={handleSpin}
               isSpinning={isSpinning}
-              canSpin={canSpin}
-              isTimerActive={timerActive}
+              canSpin={canSpin && !isTimerFromDifferentPage}
+              isTimerActive={timerActive && isTimerFromSpin}
             />
 
             {/* Slot Machine in Center */}
@@ -230,8 +240,8 @@ export default function SpinPage() {
                   </div>
                 </div>
 
-                {/* Collect Coins Button - Shows for Task results while timer is active */}
-                {isTaskResult && timerActive && (
+                {/* Collect Coins Button - Shows for Task results */}
+                {isTaskResult && (
                   <button
                     onClick={handleCollectAttempt}
                     className="w-20 h-20 rounded-full font-black text-2xl transition-all shadow-xl transform hover:scale-110 active:scale-95 bg-gradient-to-br from-green-400 to-green-600 text-white cursor-pointer border-4 border-green-700 hover:from-green-300 hover:to-green-500"
@@ -322,9 +332,6 @@ export default function SpinPage() {
         onCancel={() => setShowInsufficientCoinsDialog(false)}
         type="warning"
       />
-
-      {/* Timer at Bottom */}
-      <ResultTimer result={currentResult} isStarted={timerActive} onTaskComplete={handleTaskComplete} taskPriority={currentTaskPriority} />
     </main>
   );
 }

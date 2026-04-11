@@ -24,6 +24,7 @@ export interface ActiveTimer {
   taskPriority?: "low" | "medium" | "high";
   startTime: number;
   duration: number; // in seconds
+  source?: "spin" | "roll"; // Which page the timer was created from
 }
 
 interface TaskStore {
@@ -57,7 +58,7 @@ interface TaskStore {
   getLeisures: () => Leisure[];
   addToSpinHistory: (item: string) => void;
   recordSpinOutcome: (isTask: boolean) => void;
-  startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high") => void;
+  startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high", source?: "spin" | "roll") => void;
   clearTimer: () => void;
 }
 
@@ -253,7 +254,7 @@ export const useTaskStore = create<TaskStore>()(
         });
       },
 
-      startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high") => {
+      startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high", source?: "spin" | "roll") => {
         let duration = 0;
 
         if (result === "Rest" || result === "Game") {
@@ -284,6 +285,7 @@ export const useTaskStore = create<TaskStore>()(
             taskPriority,
             startTime: Date.now(),
             duration,
+            source,
           },
         });
       },

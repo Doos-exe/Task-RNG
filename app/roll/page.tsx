@@ -1,17 +1,27 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { useTaskStore } from "@/lib/store";
 import { selectWeightedItem, filterPityItems } from "@/lib/probability";
-import { ResultTimer } from "@/components/ResultTimer";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Import dice images
+import dice1 from "@/Elements/Dice1.png";
+import dice2 from "@/Elements/Dice2.png";
+import dice3 from "@/Elements/Dice3.png";
+import dice4 from "@/Elements/Dice4.png";
+import dice5 from "@/Elements/Dice5.png";
+import dice6 from "@/Elements/Dice6.png";
+
+const diceImages = [null, dice1, dice2, dice3, dice4, dice5, dice6];
 
 type GameState = "choosing" | "rolling" | "result-shown" | "reward-displaying";
 type UserChoice = "task" | "leisure" | null;
 
 export default function RollPage() {
-  const { tasks, leisures, spinHistory, addToSpinHistory, coins, addCoins, startTimer, clearTimer, pendingCount, removeTask } = useTaskStore();
+  const { tasks, leisures, spinHistory, addToSpinHistory, coins, addCoins, startTimer, clearTimer, pendingCount, removeTask, activeTimer, getSkipCost } = useTaskStore();
 
   // Game state
   const [gameState, setGameState] = useState<GameState>("choosing");
@@ -23,6 +33,14 @@ export default function RollPage() {
   const [isTaskReward, setIsTaskReward] = useState(false);
   const [rewardPriority, setRewardPriority] = useState<"low" | "medium" | "high">("medium");
   const [showCollectConfirm, setShowCollectConfirm] = useState(false);
+
+  // If there's an active timer, show a message and prevent rolling
+  const [showTimerWarning, setShowTimerWarning] = useState(false);
+
+  // Can roll if: coins available AND (no active timer OR timer is from this page)
+  const canRoll = coins > 0 && (!activeTimer || activeTimer.source === "roll");
+  const isTimerFromRoll = activeTimer?.source === "roll"; // Check if timer was from this page
+  const isTimerFromDifferentPage = !!activeTimer && activeTimer.source === "spin"; // Only different if explicitly from spin
 
   const playerTotal = playerDice[0] + playerDice[1];
   const systemTotal = systemDice[0] + systemDice[1];
@@ -81,8 +99,8 @@ export default function RollPage() {
       setRewardPriority(priority);
       addToSpinHistory(reward);
 
-      // Start the timer in the store for persistence
-      startTimer(reward, isTask, priority);
+      // Start the timer in the store with source="roll"
+      startTimer(reward, isTask, priority, "roll");
 
       setGameState("reward-displaying");
     } else {
@@ -94,6 +112,27 @@ export default function RollPage() {
 
   // Handle roll
   const handleRoll = useCallback(() => {
+    if (isTimerFromDifferentPage) {
+      setShowTimerWarning(true);
+      setTimeout(() => setShowTimerWarning(false), 3000);
+      return;
+    }
+
+    // If there's an active timer from this page, charge 1 coin to skip
+    if (activeTimer && activeTimer.source === "roll") {
+      if (coins < 1) {
+        setShowTimerWarning(true);
+        setTimeout(() => setShowTimerWarning(false), 3000);
+        return;
+      }
+      // Spend 1 coin to skip
+      addCoins(-1);
+      clearTimer();
+      setCurrentResult(null);
+      setUserChoice(null);
+      return;
+    }
+
     if (!userChoice || gameState !== "choosing") return;
 
     setGameState("rolling");
@@ -138,7 +177,7 @@ export default function RollPage() {
         }, 3000);
       }
     }, 5000);
-  }, [userChoice, gameState, determineReward]);
+  }, [userChoice, gameState, determineReward, activeTimer, getSkipCost, coins, isTimerFromDifferentPage, addCoins, clearTimer]);
 
   const handleChoice = (choice: UserChoice) => {
     if (gameState === "choosing") {
@@ -180,12 +219,13 @@ export default function RollPage() {
     <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>
-            Roll
-          </h1>
           <div className="flex flex-col items-center gap-1">
             <p className="text-xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>💰 {coins}</p>
           </div>
+          <h1 className="text-4xl font-bold tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>
+            Roll
+          </h1>
+          <div className="w-16"></div>
         </div>
 
         {/* Game State: Choosing */}
@@ -202,6 +242,35 @@ export default function RollPage() {
                   💡 Choose what you want, then roll the dice! Beat the system to win your reward!
                 </p>
               </div>
+
+              {activeTimer && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-100 dark:bg-red-900 border-2 border-red-600 rounded-lg p-6 mb-8"
+                >
+                  <p className="text-lg font-bold text-red-800 dark:text-red-200" style={{ fontFamily: "Courier New, monospace" }}>
+                    {isTimerFromDifferentPage
+                      ? "🎰 Active timer from Spin! Go to Spin page to continue or skip."
+                      : "⏱️ You have an active timer! Re-roll costs 1 coin, or finish the timer."}
+                  </p>
+                </motion.div>
+              )}
+
+              {showTimerWarning && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-red-100 dark:bg-red-900 border-2 border-red-600 rounded-lg p-6 mb-8"
+                >
+                  <p className="text-lg font-bold text-red-800 dark:text-red-200" style={{ fontFamily: "Courier New, monospace" }}>
+                    {isTimerFromDifferentPage
+                      ? "🎰 Cannot roll! Go to Spin page to handle that timer."
+                      : "💰 Not enough coins to re-roll! You need 1 coin."}
+                  </p>
+                </motion.div>
+              )}
 
               <div className="flex gap-8 justify-center">
                 <motion.button
@@ -240,14 +309,20 @@ export default function RollPage() {
                   className="flex justify-center mt-8"
                 >
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: !isTimerFromDifferentPage && canRoll ? 1.1 : 1 }}
+                    whileTap={{ scale: !isTimerFromDifferentPage && canRoll ? 0.9 : 1 }}
                     onClick={handleRoll}
-                    disabled={!userChoice}
-                    className="px-16 py-6 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg border-4 border-red-400 font-black text-3xl shadow-lg hover:from-red-500 hover:to-red-700 transition-all"
+                    disabled={!userChoice || !canRoll || isTimerFromDifferentPage}
+                    className={`px-16 py-6 rounded-lg border-4 font-black text-3xl shadow-lg transition-all ${
+                      isTimerFromDifferentPage || !canRoll
+                        ? "bg-gray-500 dark:bg-gray-600 text-gray-700 dark:text-gray-400 border-gray-400 cursor-not-allowed opacity-50"
+                        : activeTimer
+                        ? "bg-gradient-to-r from-orange-600 to-orange-800 text-white border-orange-400 hover:from-orange-500 hover:to-orange-700"
+                        : "bg-gradient-to-r from-red-600 to-red-800 text-white border-red-400 hover:from-red-500 hover:to-red-700"
+                    }`}
                     style={{ fontFamily: "Courier New, monospace" }}
                   >
-                    🎲 ROLL
+                    {activeTimer && !isTimerFromDifferentPage ? "🎲 ROLL (1 coin)" : "🎲 ROLL"}
                   </motion.button>
                 </motion.div>
               )}
@@ -288,12 +363,18 @@ export default function RollPage() {
                             ? { duration: 5, repeat: Infinity, ease: "easeInOut" }
                             : {}
                         }
-                        className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-yellow-400 border-4 border-yellow-600 rounded-lg flex items-center justify-center shadow-lg"
+                        className="w-24 h-24 flex items-center justify-center shadow-lg"
                         style={{ perspective: "1000px" }}
                       >
-                        <span className="text-5xl font-black text-gray-900" style={{ fontFamily: "Courier New, monospace" }}>
-                          {die}
-                        </span>
+                        {die > 0 && (
+                          <Image
+                            src={diceImages[die]}
+                            alt={`Dice ${die}`}
+                            width={96}
+                            height={96}
+                            className="rounded-lg"
+                          />
+                        )}
                       </motion.div>
                     ))}
                   </div>
@@ -317,12 +398,18 @@ export default function RollPage() {
                             ? { duration: 5, repeat: Infinity, ease: "easeInOut" }
                             : {}
                         }
-                        className="w-24 h-24 bg-gradient-to-br from-red-300 to-red-400 border-4 border-red-600 rounded-lg flex items-center justify-center shadow-lg"
+                        className="w-24 h-24 flex items-center justify-center shadow-lg"
                         style={{ perspective: "1000px" }}
                       >
-                        <span className="text-5xl font-black text-gray-900" style={{ fontFamily: "Courier New, monospace" }}>
-                          {die}
-                        </span>
+                        {die > 0 && (
+                          <Image
+                            src={diceImages[die]}
+                            alt={`Dice ${die}`}
+                            width={96}
+                            height={96}
+                            className="rounded-lg"
+                          />
+                        )}
                       </motion.div>
                     ))}
                   </div>
@@ -377,14 +464,6 @@ export default function RollPage() {
                   {rewardItem}
                 </p>
               </div>
-            </motion.div>
-
-            {/* Show timer for both tasks and leisure */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <ResultTimer result={rewardItem} isStarted={true} onTaskComplete={handleRewardComplete} taskPriority={isTaskReward ? rewardPriority : "medium"} />
             </motion.div>
 
             {/* Collect Coins Button - Shows for Task rewards */}
