@@ -280,9 +280,20 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
   useEffect(() => {
     if (isOpen && buttonRef.current && pickerRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const pickerWidth = 384; // w-96 = 24rem = 384px
+      const viewportWidth = window.innerWidth;
+
+      let left = rect.left;
+
+      // Check if picker would go off-screen to the right
+      if (rect.left + pickerWidth > viewportWidth) {
+        // Align to the right edge of the button instead
+        left = Math.max(8, rect.right - pickerWidth);
+      }
+
       setPickerStyle({
         position: "fixed",
-        left: `${rect.left}px`,
+        left: `${left}px`,
         top: `${rect.top - pickerRef.current.offsetHeight - 8}px`,
         zIndex: 9999,
       });

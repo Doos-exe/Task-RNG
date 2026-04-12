@@ -3,7 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuthStore } from "@/lib/authStore";
 import logo from "@/Elements/TaskRNG_Logo.png";
 
 const EMOJIS = ["🎲", "🎮", "🎯", "🎪", "🎨", "🎭", "🎬", "🎤", "🎧", "🎸", "🎹", "🏆", "💎", "⭐", "✨", "🔥", "💫", "🎰", "🃏", "🌟"];
@@ -38,6 +40,14 @@ function SlotMachineReel({ speed = 1 }) {
 }
 
 export function Sidebar() {
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/auth");
+  };
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-96 bg-black text-white flex flex-col overflow-hidden">
       {/* Top Red Header with Logo */}
@@ -77,10 +87,20 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Bottom "GET LUCKY" Button */}
-      <div className="px-6 py-6 border-t-4 border-yellow-500 bg-gradient-to-b from-red-900 to-red-950">
-        <button className="w-full border-4 border-yellow-500 bg-red-900 hover:bg-red-800 transition-colors py-4 font-black text-white text-lg tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>
-          GET LUCKY !!!
+      {/* Bottom: User Info and Logout */}
+      <div className="px-6 py-6 border-t-4 border-yellow-500 bg-gradient-to-b from-red-900 to-red-950 space-y-4">
+        {user && (
+          <div className="text-center mb-4 pb-4 border-b border-yellow-600">
+            <p className="text-sm text-gray-300">Welcome,</p>
+            <p className="font-bold text-white truncate">{user.name}</p>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className="w-full border-2 border-yellow-500 bg-red-700 hover:bg-red-600 transition-colors py-3 font-bold text-white text-sm tracking-wider"
+          style={{ fontFamily: "Courier New, monospace" }}
+        >
+          LOGOUT
         </button>
       </div>
     </aside>

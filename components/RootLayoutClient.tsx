@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTaskStore } from "@/lib/store";
 import { Layout } from "@/components/Layout";
+import { AuthGuard } from "@/components/AuthGuard";
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const theme = useTaskStore((state) => state.theme);
@@ -17,5 +18,9 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  return <Layout>{children}</Layout>;
+  return (
+    <AuthGuard>
+      <Layout>{children}</Layout>
+    </AuthGuard>
+  );
 }

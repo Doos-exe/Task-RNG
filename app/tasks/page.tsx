@@ -5,7 +5,7 @@ import { useTaskStore, Task, Leisure } from "@/lib/store";
 import EmojiPicker from "@/components/EmojiPicker";
 
 export default function TasksPage() {
-  const { tasks, addTask, removeTask, updateTaskEmoji, leisures, addLeisure, removeLeisure, updateLeisure, updateLeisureEmoji } = useTaskStore();
+  const { tasks, addTask, removeTask, updateTaskEmoji, updateTask, leisures, addLeisure, removeLeisure, updateLeisure, updateLeisureEmoji } = useTaskStore();
   const [input, setInput] = useState("");
   const [emoji, setEmoji] = useState("✓");
   const [selectedPriority, setSelectedPriority] = useState<
@@ -15,6 +15,8 @@ export default function TasksPage() {
   const [leisureEmoji, setLeisureEmoji] = useState("🎯");
   const [editingLeisureId, setEditingLeisureId] = useState<string | null>(null);
   const [editLeisureValue, setEditLeisureValue] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editTaskValue, setEditTaskValue] = useState("");
 
   const handleAdd = () => {
     if (input.trim()) {
@@ -48,6 +50,24 @@ export default function TasksPage() {
   const handleCancelEditLeisure = () => {
     setEditingLeisureId(null);
     setEditLeisureValue("");
+  };
+
+  const handleStartEditTask = (task: Task) => {
+    setEditingTaskId(task.id);
+    setEditTaskValue(task.title);
+  };
+
+  const handleSaveEditTask = (id: string) => {
+    if (editTaskValue.trim()) {
+      updateTask(id, editTaskValue.trim());
+      setEditingTaskId(null);
+      setEditTaskValue("");
+    }
+  };
+
+  const handleCancelEditTask = () => {
+    setEditingTaskId(null);
+    setEditTaskValue("");
   };
 
   const pendingTasks = tasks.filter((t) => !t.completed);
@@ -129,13 +149,13 @@ export default function TasksPage() {
           <table className="w-full border-collapse border-2 border-white dark:border-white">
             <thead>
               <tr className="border-2 border-white dark:border-white bg-white dark:bg-gray-700">
-                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
-                  Emoji
+                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg w-24" style={{ fontFamily: "Courier New, monospace" }}>
+                  Symbol
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg flex-1" style={{ fontFamily: "Courier New, monospace" }}>
                   Tasks
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg w-48" style={{ fontFamily: "Courier New, monospace" }}>
                   Risk
                 </th>
               </tr>
@@ -159,14 +179,58 @@ export default function TasksPage() {
                     </td>
                     <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
                       <div className="flex justify-between items-center">
-                        <span>{task.title}</span>
-                        <button
-                          onClick={() => removeTask(task.id)}
-                          className="text-yellow-300 dark:text-yellow-300 hover:text-yellow-100 dark:hover:text-yellow-100 transition ml-4 font-bold text-lg"
-                          title="Delete task"
-                        >
-                          🗑️
-                        </button>
+                        {editingTaskId === task.id ? (
+                          <input
+                            type="text"
+                            value={editTaskValue}
+                            onChange={(e) => setEditTaskValue(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") handleSaveEditTask(task.id);
+                              if (e.key === "Escape") handleCancelEditTask();
+                            }}
+                            className="px-3 py-2 border-2 border-yellow-400 rounded bg-gray-700 text-white flex-1 font-semibold"
+                            autoFocus
+                          />
+                        ) : (
+                          <span>{task.title}</span>
+                        )}
+                        <div className="flex items-center gap-3 ml-4">
+                          {editingTaskId === task.id ? (
+                            <>
+                              <button
+                                onClick={() => handleSaveEditTask(task.id)}
+                                className="text-green-400 dark:text-green-400 hover:text-green-200 dark:hover:text-green-200 transition font-bold text-lg"
+                                title="Save"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={handleCancelEditTask}
+                                className="text-red-400 dark:text-red-400 hover:text-red-200 dark:hover:text-red-200 transition font-bold text-lg"
+                                title="Cancel"
+                              >
+                                ✕
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleStartEditTask(task)}
+                                className="text-blue-400 dark:text-blue-400 hover:text-blue-200 dark:hover:text-blue-200 transition font-bold text-lg"
+                                title="Edit"
+                              >
+                                ✎
+                              </button>
+                              <button
+                                onClick={() => removeTask(task.id)}
+                                className="text-yellow-300 dark:text-yellow-300 hover:text-yellow-100 dark:hover:text-yellow-100 transition font-bold text-lg"
+                                title="Delete task"
+                              >
+                                🗑️
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className={`px-6 py-4 border-l-2 border-white dark:border-white font-bold ${getRiskColor(task.priority || "medium")}`} style={{ fontFamily: "Courier New, monospace" }}>
@@ -208,21 +272,18 @@ export default function TasksPage() {
           <table className="w-full border-collapse border-2 border-white dark:border-white">
             <thead>
               <tr className="border-2 border-white dark:border-white bg-white dark:bg-gray-700">
-                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
-                  Emoji
+                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg w-24" style={{ fontFamily: "Courier New, monospace" }}>
+                  Symbol
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg flex-1" style={{ fontFamily: "Courier New, monospace" }}>
                   Leisure Activity
-                </th>
-                <th className="px-6 py-4 text-center font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg" style={{ fontFamily: "Courier New, monospace" }}>
-                  Actions
                 </th>
               </tr>
             </thead>
             <tbody>
               {leisures.length === 0 ? (
                 <tr className="border-2 border-white dark:border-white">
-                  <td colSpan={3} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
+                  <td colSpan={2} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
                     No leisure activities yet. Add one to get started!
                   </td>
                 </tr>
@@ -237,61 +298,61 @@ export default function TasksPage() {
                       <EmojiPicker value={leisure.emoji} onChange={(newEmoji) => updateLeisureEmoji(leisure.id, newEmoji)} />
                     </td>
                     <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
-                      {editingLeisureId === leisure.id ? (
-                        <input
-                          type="text"
-                          value={editLeisureValue}
-                          onChange={(e) => setEditLeisureValue(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") handleSaveEditLeisure(leisure.id);
-                            if (e.key === "Escape") handleCancelEditLeisure();
-                          }}
-                          className="px-3 py-2 border-2 border-yellow-400 rounded bg-gray-700 text-white w-full font-semibold"
-                          autoFocus
-                        />
-                      ) : (
-                        <span>{leisure.title}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 border-l-2 border-white dark:border-white font-bold text-center">
-                      <div className="flex justify-center items-center gap-4">
+                      <div className="flex justify-between items-center">
                         {editingLeisureId === leisure.id ? (
-                          <>
-                            <button
-                              onClick={() => handleSaveEditLeisure(leisure.id)}
-                              className="text-green-400 dark:text-green-400 hover:text-green-200 dark:hover:text-green-200 transition font-bold text-lg"
-                              title="Save"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              onClick={handleCancelEditLeisure}
-                              className="text-red-400 dark:text-red-400 hover:text-red-200 dark:hover:text-red-200 transition font-bold text-lg"
-                              title="Cancel"
-                            >
-                              ✕
-                            </button>
-                          </>
+                          <input
+                            type="text"
+                            value={editLeisureValue}
+                            onChange={(e) => setEditLeisureValue(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") handleSaveEditLeisure(leisure.id);
+                              if (e.key === "Escape") handleCancelEditLeisure();
+                            }}
+                            className="px-3 py-2 border-2 border-yellow-400 rounded bg-gray-700 text-white flex-1 font-semibold"
+                            autoFocus
+                          />
                         ) : (
-                          <>
-                            <button
-                              onClick={() => handleStartEditLeisure(leisure)}
-                              className="text-blue-400 dark:text-blue-400 hover:text-blue-200 dark:hover:text-blue-200 transition font-bold text-lg"
-                              title="Edit"
-                            >
-                              ✎
-                            </button>
-                            {!leisure.isDefault && (
-                              <button
-                                onClick={() => removeLeisure(leisure.id)}
-                                className="text-yellow-300 dark:text-yellow-300 hover:text-yellow-100 dark:hover:text-yellow-100 transition ml-2 font-bold text-lg"
-                                title="Delete"
-                              >
-                                🗑️
-                              </button>
-                            )}
-                          </>
+                          <span>{leisure.title}</span>
                         )}
+                        <div className="flex items-center gap-3 ml-4">
+                          {editingLeisureId === leisure.id ? (
+                            <>
+                              <button
+                                onClick={() => handleSaveEditLeisure(leisure.id)}
+                                className="text-green-400 dark:text-green-400 hover:text-green-200 dark:hover:text-green-200 transition font-bold text-lg"
+                                title="Save"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={handleCancelEditLeisure}
+                                className="text-red-400 dark:text-red-400 hover:text-red-200 dark:hover:text-red-200 transition font-bold text-lg"
+                                title="Cancel"
+                              >
+                                ✕
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleStartEditLeisure(leisure)}
+                                className="text-blue-400 dark:text-blue-400 hover:text-blue-200 dark:hover:text-blue-200 transition font-bold text-lg"
+                                title="Edit"
+                              >
+                                ✎
+                              </button>
+                              {!leisure.isDefault && (
+                                <button
+                                  onClick={() => removeLeisure(leisure.id)}
+                                  className="text-yellow-300 dark:text-yellow-300 hover:text-yellow-100 dark:hover:text-yellow-100 transition font-bold text-lg"
+                                  title="Delete"
+                                >
+                                  🗑️
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
