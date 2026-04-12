@@ -27,7 +27,6 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
   const recordSpinOutcome = useTaskStore((state) => state.recordSpinOutcome);
   const [reelRotations, setReelRotations] = useState([0, 0, 0]);
   const [displayReels, setDisplayReels] = useState<Array<{ title: string; emoji: string }[]>>([[], [], []]);
-  const recordedOutcomeRef = useRef(false);
 
   const isLarge = size === "large";
   const itemHeight = isLarge ? ITEM_HEIGHT_LARGE : ITEM_HEIGHT_SMALL;
@@ -84,7 +83,6 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
   useEffect(() => {
     if (!isSpinning) {
       setReelRotations([0, 0, 0]);
-      recordedOutcomeRef.current = false;
       return;
     }
 
@@ -122,11 +120,8 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
       isTaskResult = false;
     }
 
-    // Record outcome only once per spin
-    if (!recordedOutcomeRef.current) {
-      recordedOutcomeRef.current = true;
-      recordSpinOutcome(isTaskResult);
-    }
+    // Note: recordSpinOutcome is called from the parent component after results are displayed
+    // to ensure pity counter only updates once per spin
 
     // Find target positions in each reel
     const rotations = displayReels.map((reel) => {
@@ -155,7 +150,7 @@ export function SlotMachine({ isSpinning, onComplete, size = "small" }: SlotMach
     }, SPIN_DURATION * 1000);
 
     return () => clearTimeout(timer);
-  }, [isSpinning, tasks, leisures, onComplete, itemSize, spinHistory, addToSpinHistory, recordSpinOutcome]);
+  }, [isSpinning, tasks, leisures, onComplete, itemSize, spinHistory, addToSpinHistory]);
 
   const itemHeightClass = isLarge ? "h-24" : "h-12";
   const itemTextClass = isLarge ? "text-2xl" : "text-sm";

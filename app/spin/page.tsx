@@ -137,7 +137,7 @@ export default function SpinPage() {
             </div>
 
             {/* Title in Center */}
-            <h1 className="text-4xl font-black tracking-wider flex-shrink-0" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>🎰 TASK RNG</h1>
+            <h1 className="text-4xl font-black tracking-wider flex-shrink-0" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>📍 PULL TO WIN!</h1>
 
             {/* Pity System on Far Right - Progress Bars */}
             <div className="flex flex-col gap-2 flex-shrink-0">
@@ -292,7 +292,7 @@ export default function SpinPage() {
               </p>
             ) : (
               <p className="text-lg font-bold text-white bg-gray-700 dark:bg-gray-600 rounded-lg px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
-                ↓ Drag handle down ↓
+                📍 PULL THE LEVER 📍
               </p>
             )}
           </div>

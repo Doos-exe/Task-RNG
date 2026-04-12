@@ -16,6 +16,10 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
 
   // Sync with store's timer
   useEffect(() => {
@@ -71,6 +75,23 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
     return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    setPosition({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
+
   const progressPercent = totalTime > 0 ? (timeLeft / totalTime) * 100 : 0;
 
   if (!activeTimer) {
@@ -86,10 +107,21 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50"
+        style={{ x: position.x, y: position.y }}
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50 cursor-grab active:cursor-grabbing"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
       >
         {/* Timer Display */}
-        <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-600 rounded-2xl p-8 shadow-2xl min-w-64 text-center">
+        <motion.div
+          animate={{ opacity: isHovering ? 1 : 0.2 }}
+          transition={{ duration: 0.2 }}
+          className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-600 rounded-2xl p-8 shadow-2xl min-w-64 text-center"
+        >
           {/* Activity Type */}
           <p className="text-sm font-black text-yellow-400 uppercase tracking-widest mb-2">
             {timerLabel}
@@ -121,7 +153,7 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
           >
             ⏭️ Skip (Test)
           </button>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Completion Message */}
