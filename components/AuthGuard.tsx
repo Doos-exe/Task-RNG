@@ -1,19 +1,21 @@
 "use client";
 
-import { useAuthStore } from "@/lib/authStore";
+import { useAuth } from "@/lib/useAuth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const PUBLIC_ROUTES = ["/auth"];
+const PUBLIC_ROUTES = ["/auth", "/about"];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Allow hydration to complete
+    // Wait for auth to finish loading
+    if (isLoading) return;
+
     setIsReady(true);
 
     const isPublic = PUBLIC_ROUTES.includes(pathname);
@@ -23,11 +25,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     } else if (isAuthenticated && pathname === "/auth") {
       router.push("/");
     }
-  }, [isAuthenticated, pathname, router]);
+  }, [isAuthenticated, isLoading, pathname, router]);
 
-  // Don't render until hydration is complete
-  if (!isReady) {
-    return null;
+  // Don't render until auth is loaded
+  if (isLoading || !isReady) {
+    return <div className="min-h-screen bg-app-lightMain dark:bg-app-darkMain" />;
   }
 
   return children;

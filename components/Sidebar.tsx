@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useAuthStore } from "@/lib/authStore";
+import { useAuth } from "@/lib/useAuth";
 import logo from "@/Elements/TaskRNG_Logo.png";
 
 const EMOJIS = ["🎲", "🎮", "🎯", "🎪", "🎨", "🎭", "🎬", "🎤", "🎧", "🎸", "🎹", "🏆", "💎", "⭐", "✨", "🔥", "💫", "🎰", "🃏", "🌟"];
@@ -41,10 +42,30 @@ function SlotMachineReel({ speed = 1 }) {
 
 export function Sidebar() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuth();
+  const [userName, setUserName] = useState<string | null>(null);
 
-  const handleLogout = () => {
-    logout();
+  // Fetch user profile when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      const fetchProfile = async () => {
+        try {
+          const response = await fetch("/api/profile");
+          if (response.ok) {
+            const profile = await response.json();
+            setUserName(profile.name || null);
+          }
+        } catch (error) {
+          console.error("Failed to fetch profile:", error);
+        }
+      };
+
+      fetchProfile();
+    }
+  }, [isAuthenticated, user?.id]);
+
+  const handleLogout = async () => {
+    await logout();
     router.push("/auth");
   };
 
@@ -92,7 +113,7 @@ export function Sidebar() {
         {user && (
           <div className="text-center mb-4 pb-4 border-b border-yellow-600">
             <p className="text-sm text-gray-300">Welcome,</p>
-            <p className="font-bold text-white truncate">{user.name}</p>
+            <p className="font-bold text-white truncate">{userName || user.email}</p>
           </div>
         )}
         <button
