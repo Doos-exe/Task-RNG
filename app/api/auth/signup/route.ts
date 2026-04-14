@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
       throw new APIError(400, "Email, password, and name are required");
     }
 
-    // Email validation (allow multiple dots in domain)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Email validation (allow multiple dots in domain and local part)
+    const emailRegex = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
     if (!emailRegex.test(email) || email.length === 0) {
       throw new APIError(400, "Please enter a valid email address");
     }

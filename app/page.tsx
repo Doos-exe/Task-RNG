@@ -14,7 +14,7 @@ export default function Home() {
 
         {/* BET - Top Right */}
         <div className="absolute top-1/4 right-1/4 translate-x-1/2 -translate-y-1/2">
-          <PokerChip label="BET" href="/tasks" />
+          <PokerChip label="BET" href="/bet" />
         </div>
 
         {/* ROLL - Center */}

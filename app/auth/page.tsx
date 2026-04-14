@@ -30,8 +30,8 @@ export default function Auth() {
     const newErrors: Record<string, string> = {};
 
     if (!email) newErrors.email = "Email is required";
-    // Better email validation that allows multiple dots
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Better email validation that allows multiple dots in domain and local part
+    const emailRegex = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
     if (!emailRegex.test(email)) newErrors.email = "Invalid email format";
     if (!password) newErrors.password = "Password is required";
     if (password.length < 6)

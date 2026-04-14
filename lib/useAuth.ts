@@ -39,6 +39,7 @@ export function useAuth(): UseAuthReturn {
         setUser({
           id: session.user.id,
           email: session.user.email,
+          name: session.user.user_metadata?.name,
         });
         setIsAuthenticated(true);
       } else {
@@ -56,6 +57,7 @@ export function useAuth(): UseAuthReturn {
         setUser({
           id: session.user.id,
           email: session.user.email,
+          name: session.user.user_metadata?.name,
         });
         setIsAuthenticated(true);
       } else {

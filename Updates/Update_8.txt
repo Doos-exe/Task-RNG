@@ -1,7 +1,15 @@
 Date: 04/14/26
 
 Updates:
-- Trying to fix email set ups
+- Fixed personalize email
 - UI fixes
 
 To Update:
+- Finalize the Spin and Roll logic
+  - Losing UX when exiting the page
+  - UI errors
+  - Timer bug
+- Bet page
+  - The emoji out of bounds
+- Finalize the database fixes
+  - Email confirmation

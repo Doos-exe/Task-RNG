@@ -1,6 +1,41 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// Global variable to track current userId for storage
+let currentUserId: string | null = null;
+
+// Custom storage that includes userId in the key
+const userAwareStorage = {
+  getItem: (key: string): string | null => {
+    const userId = currentUserId;
+    if (!userId) return localStorage.getItem(key);
+    const userKey = `${key}-${userId}`;
+    return localStorage.getItem(userKey);
+  },
+  setItem: (key: string, value: string): void => {
+    const userId = currentUserId;
+    if (!userId) {
+      localStorage.setItem(key, value);
+      return;
+    }
+    const userKey = `${key}-${userId}`;
+    localStorage.setItem(userKey, value);
+  },
+  removeItem: (key: string): void => {
+    const userId = currentUserId;
+    if (!userId) {
+      localStorage.removeItem(key);
+      return;
+    }
+    const userKey = `${key}-${userId}`;
+    localStorage.removeItem(userKey);
+  },
+};
+
+export const setCurrentUserId = (userId: string | null) => {
+  currentUserId = userId;
+};
+
 export interface Task {
   id: string;
   title: string;
@@ -28,6 +63,7 @@ export interface ActiveTimer {
 }
 
 interface TaskStore {
+  userId: string | null;
   tasks: Task[];
   leisures: Leisure[];
   coins: number;
@@ -38,6 +74,7 @@ interface TaskStore {
   taskConsecutiveCount: number;
   leisureConsecutiveCount: number;
   activeTimer: ActiveTimer | null;
+  setUserId: (userId: string | null) => void;
   addTask: (title: string, priority?: "low" | "medium" | "high", emoji?: string) => void;
   removeTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -82,6 +119,7 @@ const DEFAULT_LEISURES: Leisure[] = [
 export const useTaskStore = create<TaskStore>()(
   persist(
     (set, get) => ({
+      userId: null,
       tasks: [],
       leisures: DEFAULT_LEISURES,
       coins: 0,
@@ -93,7 +131,46 @@ export const useTaskStore = create<TaskStore>()(
       leisureConsecutiveCount: 0,
       activeTimer: null,
 
-  addTask: (title: string, priority?: "low" | "medium" | "high", emoji: string = "✓") =>
+      setUserId: (userId: string | null) => {
+        setCurrentUserId(userId);
+
+        // Manually load data for this user from localStorage
+        if (userId) {
+          const userKey = `task-rng-store-${userId}`;
+          const storedData = localStorage.getItem(userKey);
+
+          if (storedData && storedData !== "[object Object]") {
+            try {
+              const parsed = JSON.parse(storedData);
+              if (parsed && typeof parsed === 'object') {
+                set(parsed);
+                return;
+              }
+            } catch (e) {
+              console.error("Failed to parse stored user data:", e);
+              // Clear corrupted data
+              localStorage.removeItem(userKey);
+            }
+          }
+        }
+
+        // If no stored data, reset to default state
+        set({
+          userId,
+          tasks: [],
+          leisures: DEFAULT_LEISURES,
+          coins: 0,
+          theme: "light",
+          lastSpinSkipDate: "",
+          currentSkipCost: 1,
+          spinHistory: [],
+          taskConsecutiveCount: 0,
+          leisureConsecutiveCount: 0,
+          activeTimer: null,
+        });
+      },
+
+      addTask: (title: string, priority?: "low" | "medium" | "high", emoji: string = "✓") =>
     set((state) => ({
       tasks: [
         ...state.tasks,
@@ -298,6 +375,7 @@ export const useTaskStore = create<TaskStore>()(
     }),
     {
       name: "task-rng-store",
+      storage: userAwareStorage,
     }
   )
 );
