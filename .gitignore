@@ -10,3 +10,5 @@ yarn-error.log*
 .vercel/
 out/
 dist/
+IMPLEMENTATION_SUMMARY.md
+SUPABASE_SETUP.md
