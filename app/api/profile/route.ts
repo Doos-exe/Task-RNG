@@ -15,6 +15,18 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("Profile fetch error:", error);
+
+      // If profile doesn't exist, return default values
+      if (error.code === "PGRST116" || error.message?.includes("No rows found")) {
+        return NextResponse.json(
+          {
+            name: null,
+            theme: "light",
+          },
+          { status: 200 }
+        );
+      }
+
       return NextResponse.json(
         {
           name: null,
@@ -29,3 +41,4 @@ export async function GET(request: NextRequest) {
     return handleAPIError(error);
   }
 }
+

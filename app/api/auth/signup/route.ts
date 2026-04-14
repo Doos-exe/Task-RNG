@@ -13,9 +13,9 @@ export async function POST(request: NextRequest) {
       throw new APIError(400, "Email, password, and name are required");
     }
 
-    // Email validation (basic but solid)
+    // Email validation (allow multiple dots in domain)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email) || email.length === 0) {
       throw new APIError(400, "Please enter a valid email address");
     }
 
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user profile (use admin client to bypass RLS)
+    let profileCreated = false;
     const { error: profileError } = await supabaseAdmin
       .from("user_profiles")
       .insert({
@@ -57,7 +58,17 @@ export async function POST(request: NextRequest) {
 
     if (profileError) {
       console.error("Profile creation error:", profileError);
-      throw new APIError(500, "Failed to create user profile");
+
+      // If it's a foreign key error, log it but continue with signup
+      if (profileError.code === "23503") {
+        console.warn("Foreign key constraint error on user_profiles. Continuing with signup anyway.");
+        // Don't throw error - allow user to proceed
+        profileCreated = false;
+      } else {
+        throw new APIError(500, "Failed to create user profile");
+      }
+    } else {
+      profileCreated = true;
     }
 
     // Create user progress record (use admin client to bypass RLS)
@@ -74,7 +85,14 @@ export async function POST(request: NextRequest) {
 
     if (progressError) {
       console.error("Progress creation error:", progressError);
-      throw new APIError(500, "Failed to create user progress");
+
+      // If it's a foreign key error, log it but continue with signup
+      if (progressError.code === "23503") {
+        console.warn("Foreign key constraint error on user_progress. Continuing with signup anyway.");
+        // Don't throw error - allow user to proceed
+      } else {
+        throw new APIError(500, "Failed to create user progress");
+      }
     }
 
     return NextResponse.json(

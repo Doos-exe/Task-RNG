@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/useAuth";
@@ -42,6 +42,7 @@ function SlotMachineReel({ speed = 1 }) {
 
 export function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout, isAuthenticated } = useAuth();
   const [userName, setUserName] = useState<string | null>(null);
 
@@ -68,6 +69,8 @@ export function Sidebar() {
     await logout();
     router.push("/auth");
   };
+
+  const isAuthPage = pathname === "/auth";
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-96 bg-black text-white flex flex-col overflow-hidden">
@@ -113,16 +116,19 @@ export function Sidebar() {
         {user && (
           <div className="text-center mb-4 pb-4 border-b border-yellow-600">
             <p className="text-sm text-gray-300">Welcome,</p>
-            <p className="font-bold text-white truncate">{userName || user.email}</p>
+            <p className="font-bold text-white truncate">{userName || "User"}</p>
+            {userName && <p className="text-xs text-gray-400 truncate">{user.email}</p>}
           </div>
         )}
-        <button
-          onClick={handleLogout}
-          className="w-full border-2 border-yellow-500 bg-red-700 hover:bg-red-600 transition-colors py-3 font-bold text-white text-sm tracking-wider"
-          style={{ fontFamily: "Courier New, monospace" }}
-        >
-          LOGOUT
-        </button>
+        {!isAuthPage && (
+          <button
+            onClick={handleLogout}
+            className="w-full border-2 border-yellow-500 bg-red-700 hover:bg-red-600 transition-colors py-3 font-bold text-white text-sm tracking-wider"
+            style={{ fontFamily: "Courier New, monospace" }}
+          >
+            LOGOUT
+          </button>
+        )}
       </div>
     </aside>
   );

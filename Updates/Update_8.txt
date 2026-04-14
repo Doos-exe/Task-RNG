@@ -1,0 +1,7 @@
+Date: 04/14/26
+
+Updates:
+- Trying to fix email set ups
+- UI fixes
+
+To Update:
