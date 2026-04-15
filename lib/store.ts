@@ -1,36 +1,7 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 // Global variable to track current userId for storage
 let currentUserId: string | null = null;
-
-// Custom storage that includes userId in the key
-const userAwareStorage = {
-  getItem: (key: string): string | null => {
-    const userId = currentUserId;
-    if (!userId) return localStorage.getItem(key);
-    const userKey = `${key}-${userId}`;
-    return localStorage.getItem(userKey);
-  },
-  setItem: (key: string, value: string): void => {
-    const userId = currentUserId;
-    if (!userId) {
-      localStorage.setItem(key, value);
-      return;
-    }
-    const userKey = `${key}-${userId}`;
-    localStorage.setItem(userKey, value);
-  },
-  removeItem: (key: string): void => {
-    const userId = currentUserId;
-    if (!userId) {
-      localStorage.removeItem(key);
-      return;
-    }
-    const userKey = `${key}-${userId}`;
-    localStorage.removeItem(userKey);
-  },
-};
 
 export const setCurrentUserId = (userId: string | null) => {
   currentUserId = userId;
@@ -116,10 +87,59 @@ const DEFAULT_LEISURES: Leisure[] = [
   },
 ];
 
-export const useTaskStore = create<TaskStore>()(
-  persist(
-    (set, get) => ({
-      userId: null,
+// Helper function to save store to localStorage
+const saveToLocalStorage = (state: TaskStore) => {
+  if (!currentUserId) return;
+  try {
+    const userKey = `task-rng-store-${currentUserId}`;
+    localStorage.setItem(userKey, JSON.stringify(state));
+  } catch (e) {
+    console.error("Failed to save store to localStorage:", e);
+  }
+};
+
+// Helper function to load store from localStorage
+const loadFromLocalStorage = (userId: string): TaskStore | null => {
+  try {
+    const userKey = `task-rng-store-${userId}`;
+    const stored = localStorage.getItem(userKey);
+    if (!stored || stored === "[object Object]") return null;
+    const parsed = JSON.parse(stored);
+    return parsed as TaskStore;
+  } catch (e) {
+    console.error("Failed to load store from localStorage:", e);
+    return null;
+  }
+};
+
+export const useTaskStore = create<TaskStore>((set, get) => ({
+  userId: null,
+  tasks: [],
+  leisures: DEFAULT_LEISURES,
+  coins: 0,
+  theme: "light",
+  lastSpinSkipDate: "",
+  currentSkipCost: 1,
+  spinHistory: [],
+  taskConsecutiveCount: 0,
+  leisureConsecutiveCount: 0,
+  activeTimer: null,
+
+  setUserId: (userId: string | null) => {
+    setCurrentUserId(userId);
+
+    if (userId) {
+      // Try to load user data from localStorage
+      const loaded = loadFromLocalStorage(userId);
+      if (loaded) {
+        set(loaded);
+        return;
+      }
+    }
+
+    // If no stored data, reset to default state
+    set({
+      userId,
       tasks: [],
       leisures: DEFAULT_LEISURES,
       coins: 0,
@@ -130,252 +150,299 @@ export const useTaskStore = create<TaskStore>()(
       taskConsecutiveCount: 0,
       leisureConsecutiveCount: 0,
       activeTimer: null,
+    });
+  },
 
-      setUserId: (userId: string | null) => {
-        setCurrentUserId(userId);
-
-        // Manually load data for this user from localStorage
-        if (userId) {
-          const userKey = `task-rng-store-${userId}`;
-          const storedData = localStorage.getItem(userKey);
-
-          if (storedData && storedData !== "[object Object]") {
-            try {
-              const parsed = JSON.parse(storedData);
-              if (parsed && typeof parsed === 'object') {
-                set(parsed);
-                return;
-              }
-            } catch (e) {
-              console.error("Failed to parse stored user data:", e);
-              // Clear corrupted data
-              localStorage.removeItem(userKey);
-            }
-          }
-        }
-
-        // If no stored data, reset to default state
-        set({
-          userId,
-          tasks: [],
-          leisures: DEFAULT_LEISURES,
-          coins: 0,
-          theme: "light",
-          lastSpinSkipDate: "",
-          currentSkipCost: 1,
-          spinHistory: [],
-          taskConsecutiveCount: 0,
-          leisureConsecutiveCount: 0,
-          activeTimer: null,
-        });
-      },
-
-      addTask: (title: string, priority?: "low" | "medium" | "high", emoji: string = "✓") =>
-    set((state) => ({
-      tasks: [
-        ...state.tasks,
-        {
-          id: Date.now().toString(),
-          title,
-          emoji,
-          createdAt: Date.now(),
-          completed: false,
-          priority,
-        },
-      ],
-    })),
-
-      removeTask: (id) =>
-        set((state) => ({
-          tasks: state.tasks.filter((task) => task.id !== id),
-        })),
-
-      toggleTask: (id) =>
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, completed: !task.completed } : task
-          ),
-        })),
-
-      updateTask: (id, title) =>
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, title } : task
-          ),
-        })),
-
-      updateTaskEmoji: (id, emoji) =>
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, emoji } : task
-          ),
-        })),
-
-      pendingCount: () => {
-        return get().tasks.filter((task) => !task.completed).length;
-      },
-
-      addCoins: (amount: number) =>
-        set((state) => ({
-          coins: state.coins + amount,
-        })),
-
-      spendCoins: (amount: number) => {
-        const currentCoins = get().coins;
-        if (currentCoins >= amount) {
-          set((state) => ({
-            coins: state.coins - amount,
-          }));
-          return true;
-        }
-        return false;
-      },
-
-      resetCoins: () =>
-        set({
-          coins: 0,
-        }),
-
-      getSkipCost: () => {
-        return get().currentSkipCost;
-      },
-
-      checkAndResetSkipCostIfNewDay: () => {
-        const today = new Date().toDateString();
-        const lastDate = get().lastSpinSkipDate;
-
-        // If it's a new day, reset the cost to 1
-        if (lastDate !== today) {
-          set({
-            lastSpinSkipDate: today,
-            currentSkipCost: 1,
-          });
-        }
-      },
-
-      useSkip: () => {
-        const skipCost = get().getSkipCost();
-        const spent = get().spendCoins(skipCost);
-
-        if (spent) {
-          // Double the cost for next skip
-          set((state) => ({
-            currentSkipCost: state.currentSkipCost * 2,
-          }));
-          return true;
-        }
-        return false;
-      },
-
-      setTheme: (theme: "light" | "dark") =>
-        set({
-          theme,
-        }),
-
-      addLeisure: (title) =>
-        set((state) => ({
-          leisures: [
-            ...state.leisures,
-            {
-              id: Date.now().toString(),
-              title,
-              emoji: "🎯",
-              createdAt: Date.now(),
-              isDefault: false,
-            },
-          ],
-        })),
-
-      removeLeisure: (id) =>
-        set((state) => ({
-          leisures: state.leisures.filter((leisure) => leisure.id !== id || leisure.isDefault),
-        })),
-
-      updateLeisure: (id, title) =>
-        set((state) => ({
-          leisures: state.leisures.map((leisure) =>
-            leisure.id === id ? { ...leisure, title } : leisure
-          ),
-        })),
-
-      updateLeisureEmoji: (id, emoji) =>
-        set((state) => ({
-          leisures: state.leisures.map((leisure) =>
-            leisure.id === id ? { ...leisure, emoji } : leisure
-          ),
-        })),
-
-      getLeisures: () => {
-        return get().leisures;
-      },
-
-      addToSpinHistory: (item: string) => {
-        set((state) => ({
-          spinHistory: [item, ...state.spinHistory].slice(0, 3),
-        }));
-      },
-
-      recordSpinOutcome: (isTask: boolean) => {
-        set((state) => {
-          if (isTask) {
-            return {
-              taskConsecutiveCount: state.taskConsecutiveCount + 1,
-              leisureConsecutiveCount: 0,
-            };
-          } else {
-            return {
-              leisureConsecutiveCount: state.leisureConsecutiveCount + 1,
-              taskConsecutiveCount: 0,
-            };
-          }
-        });
-      },
-
-      startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high", source?: "spin" | "roll") => {
-        let duration = 0;
-
-        if (result === "Rest" || result === "Game") {
-          // Randomize between 30, 45, or 60 minutes
-          const options = [30, 45, 60];
-          const randomIndex = Math.floor(Math.random() * options.length);
-          duration = options[randomIndex] * 60; // Convert to seconds
-        } else if (isTask) {
-          // For Tasks, use priority to determine duration
-          if (taskPriority === "low") {
-            duration = 30 * 60;
-          } else if (taskPriority === "medium") {
-            duration = 45 * 60;
-          } else if (taskPriority === "high") {
-            duration = 60 * 60;
-          } else {
-            duration = 45 * 60; // Default to medium
-          }
-        } else {
-          // Default leisure duration
-          duration = 45 * 60;
-        }
-
-        set({
-          activeTimer: {
-            result,
-            isTask,
-            taskPriority,
-            startTime: Date.now(),
-            duration,
-            source,
+  addTask: (title: string, priority?: "low" | "medium" | "high", emoji: string = "✓") =>
+    set((state) => {
+      const newState = {
+        ...state,
+        tasks: [
+          ...state.tasks,
+          {
+            id: Date.now().toString(),
+            title,
+            emoji,
+            createdAt: Date.now(),
+            completed: false,
+            priority,
           },
-        });
-      },
-
-      clearTimer: () => {
-        set({
-          activeTimer: null,
-        });
-      },
+        ],
+      };
+      saveToLocalStorage(newState);
+      return newState;
     }),
-    {
-      name: "task-rng-store",
-      storage: userAwareStorage,
+
+  removeTask: (id) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== id),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  toggleTask: (id) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, completed: !task.completed } : task
+        ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  updateTask: (id, title) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, title } : task
+        ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  updateTaskEmoji: (id, emoji) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, emoji } : task
+        ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  pendingCount: () => {
+    return get().tasks.filter((task) => !task.completed).length;
+  },
+
+  addCoins: (amount: number) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        coins: state.coins + amount,
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  spendCoins: (amount: number) => {
+    const currentCoins = get().coins;
+    if (currentCoins >= amount) {
+      set((state) => {
+        const newState = {
+          ...state,
+          coins: state.coins - amount,
+        };
+        saveToLocalStorage(newState);
+        return newState;
+      });
+      return true;
     }
-  )
-);
+    return false;
+  },
+
+  resetCoins: () =>
+    set((state) => {
+      const newState = {
+        ...state,
+        coins: 0,
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  getSkipCost: () => {
+    return get().currentSkipCost;
+  },
+
+  checkAndResetSkipCostIfNewDay: () => {
+    const today = new Date().toDateString();
+    const lastDate = get().lastSpinSkipDate;
+
+    if (lastDate !== today) {
+      set((state) => {
+        const newState = {
+          ...state,
+          lastSpinSkipDate: today,
+          currentSkipCost: 1,
+        };
+        saveToLocalStorage(newState);
+        return newState;
+      });
+    }
+  },
+
+  useSkip: () => {
+    const skipCost = get().getSkipCost();
+    const spent = get().spendCoins(skipCost);
+
+    if (spent) {
+      set((state) => {
+        const newState = {
+          ...state,
+          currentSkipCost: state.currentSkipCost * 2,
+        };
+        saveToLocalStorage(newState);
+        return newState;
+      });
+      return true;
+    }
+    return false;
+  },
+
+  setTheme: (theme: "light" | "dark") =>
+    set((state) => {
+      const newState = {
+        ...state,
+        theme,
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  addLeisure: (title) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        leisures: [
+          ...state.leisures,
+          {
+            id: Date.now().toString(),
+            title,
+            emoji: "🎯",
+            createdAt: Date.now(),
+            isDefault: false,
+          },
+        ],
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  removeLeisure: (id) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        leisures: state.leisures.filter((leisure) => leisure.id !== id || leisure.isDefault),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  updateLeisure: (id, title) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        leisures: state.leisures.map((leisure) =>
+          leisure.id === id ? { ...leisure, title } : leisure
+        ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  updateLeisureEmoji: (id, emoji) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        leisures: state.leisures.map((leisure) =>
+          leisure.id === id ? { ...leisure, emoji } : leisure
+        ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  getLeisures: () => {
+    return get().leisures;
+  },
+
+  addToSpinHistory: (item: string) => {
+    set((state) => {
+      const newState = {
+        ...state,
+        spinHistory: [item, ...state.spinHistory].slice(0, 3),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    });
+  },
+
+  recordSpinOutcome: (isTask: boolean) => {
+    set((state) => {
+      let newState;
+      if (isTask) {
+        newState = {
+          ...state,
+          taskConsecutiveCount: state.taskConsecutiveCount + 1,
+          leisureConsecutiveCount: 0,
+        };
+      } else {
+        newState = {
+          ...state,
+          leisureConsecutiveCount: state.leisureConsecutiveCount + 1,
+          taskConsecutiveCount: 0,
+        };
+      }
+      saveToLocalStorage(newState);
+      return newState;
+    });
+  },
+
+  startTimer: (result: string, isTask: boolean, taskPriority?: "low" | "medium" | "high", source?: "spin" | "roll") => {
+    let duration = 0;
+
+    if (result === "Rest" || result === "Game") {
+      const options = [30, 45, 60];
+      const randomIndex = Math.floor(Math.random() * options.length);
+      duration = options[randomIndex] * 60;
+    } else if (isTask) {
+      if (taskPriority === "low") {
+        duration = 30 * 60;
+      } else if (taskPriority === "medium") {
+        duration = 45 * 60;
+      } else if (taskPriority === "high") {
+        duration = 60 * 60;
+      } else {
+        duration = 45 * 60;
+      }
+    } else {
+      duration = 45 * 60;
+    }
+
+    set((state) => {
+      const newState = {
+        ...state,
+        activeTimer: {
+          result,
+          isTask,
+          taskPriority,
+          startTime: Date.now(),
+          duration,
+          source,
+        },
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    });
+  },
+
+  clearTimer: () => {
+    set((state) => {
+      const newState = {
+        ...state,
+        activeTimer: null,
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    });
+  },
+}));

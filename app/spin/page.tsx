@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { SlotMachine } from "@/components/SlotMachine";
 import { InteractiveHandle } from "@/components/InteractiveHandle";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
@@ -12,10 +12,56 @@ export default function SpinPage() {
   const [currentResult, setCurrentResult] = useState<string | null>(null);
   const [popupResult, setPopupResult] = useState<string | null>(null);
 
+  // Use refs to track the latest state values
+  const stateRef = useRef({ currentResult, popupResult, isSpinning });
+
+  // Update refs whenever state changes
+  useEffect(() => {
+    stateRef.current = { currentResult, popupResult, isSpinning };
+  }, [currentResult, popupResult, isSpinning]);
+
   // Confirmation dialogs
   const [showCollectConfirm, setShowCollectConfirm] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [showInsufficientCoinsDialog, setShowInsufficientCoinsDialog] = useState(false);
+
+  // Load state from localStorage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('spinPageState');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        if (state.currentResult !== null && state.currentResult !== undefined) {
+          setCurrentResult(state.currentResult);
+        }
+        if (state.popupResult !== null && state.popupResult !== undefined) {
+          setPopupResult(state.popupResult);
+        }
+      } catch (e) {
+        console.error('Failed to restore spin page state:', e);
+      }
+    }
+  }, []);
+
+  // Save state whenever it changes
+  useEffect(() => {
+    if (currentResult !== null || popupResult !== null || isSpinning) {
+      localStorage.setItem('spinPageState', JSON.stringify({
+        currentResult,
+        popupResult,
+        isSpinning,
+      }));
+    }
+  }, [currentResult, popupResult, isSpinning]);
+
+  // Save state when component unmounts using the ref to get latest values
+  useEffect(() => {
+    return () => {
+      if (stateRef.current.currentResult !== null || stateRef.current.popupResult !== null) {
+        localStorage.setItem('spinPageState', JSON.stringify(stateRef.current));
+      }
+    };
+  }, []);
 
   const pendingTasks = pendingCount();
   // Can spin if: (have tasks or coins) AND (no timer OR timer is from this page)
@@ -67,6 +113,7 @@ export default function SpinPage() {
         if (canSpin) {
           setCurrentResult(null);
           setIsSpinning(true);
+          localStorage.removeItem('spinPageState');
         }
       }
     }
@@ -87,6 +134,7 @@ export default function SpinPage() {
       setShowSkipConfirm(false);
       setCurrentResult(null);
       clearTimer();
+      localStorage.removeItem('spinPageState');
     }
   };
 
@@ -109,6 +157,7 @@ export default function SpinPage() {
       setShowCollectConfirm(false);
       setCurrentResult(null);
       clearTimer();
+      localStorage.removeItem('spinPageState');
     }
   };
 

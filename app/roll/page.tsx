@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useTaskStore } from "@/lib/store";
 import { selectWeightedItem, filterPityItems } from "@/lib/probability";
@@ -21,7 +21,7 @@ type GameState = "choosing" | "rolling" | "result-shown" | "reward-displaying";
 type UserChoice = "task" | "leisure" | null;
 
 export default function RollPage() {
-  const { tasks, leisures, spinHistory, addToSpinHistory, coins, addCoins, startTimer, clearTimer, pendingCount, removeTask, activeTimer, getSkipCost } = useTaskStore();
+  const { tasks, leisures, spinHistory, addToSpinHistory, coins, addCoins, startTimer, clearTimer, pendingCount, removeTask, activeTimer, getSkipCost, useSkip } = useTaskStore();
 
   // Game state
   const [gameState, setGameState] = useState<GameState>("choosing");
@@ -35,14 +35,70 @@ export default function RollPage() {
   const [showCollectConfirm, setShowCollectConfirm] = useState(false);
   const [popupResult, setPopupResult] = useState<string | null>(null);
   const [isRolling, setIsRolling] = useState(false);
+  const [showReRollConfirm, setShowReRollConfirm] = useState(false);
+
+  // Use refs to track the latest state values
+  const stateRef = useRef({ gameState, userChoice, playerDice, systemDice, winner, rewardItem, isTaskReward, rewardPriority });
+
+  // Update refs whenever state changes
+  useEffect(() => {
+    stateRef.current = { gameState, userChoice, playerDice, systemDice, winner, rewardItem, isTaskReward, rewardPriority };
+  }, [gameState, userChoice, playerDice, systemDice, winner, rewardItem, isTaskReward, rewardPriority]);
 
   // If there's an active timer, show a message and prevent rolling
   const [showTimerWarning, setShowTimerWarning] = useState(false);
 
-  // Can roll if: coins available AND (no active timer OR timer is from this page)
-  const canRoll = coins > 0 && (!activeTimer || activeTimer.source === "roll");
+  // Load state from localStorage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('rollPageState');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        setGameState(state.gameState || "choosing");
+        setUserChoice(state.userChoice || null);
+        setPlayerDice(state.playerDice || [0, 0]);
+        setSystemDice(state.systemDice || [0, 0]);
+        setWinner(state.winner || null);
+        if (state.rewardItem) setRewardItem(state.rewardItem);
+        setIsTaskReward(state.isTaskReward || false);
+        setRewardPriority(state.rewardPriority || "medium");
+      } catch (e) {
+        console.error('Failed to restore roll page state:', e);
+      }
+    }
+  }, []);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('rollPageState', JSON.stringify({
+      gameState,
+      userChoice,
+      playerDice,
+      systemDice,
+      winner,
+      rewardItem,
+      isTaskReward,
+      rewardPriority,
+    }));
+  }, [gameState, userChoice, playerDice, systemDice, winner, rewardItem, isTaskReward, rewardPriority]);
+
+  // Save state when component unmounts using the ref to get latest values
+  useEffect(() => {
+    return () => {
+      if (stateRef.current.rewardItem || stateRef.current.gameState !== "choosing") {
+        localStorage.setItem('rollPageState', JSON.stringify(stateRef.current));
+      }
+    };
+  }, []);
+
+  // Define timer source checks first
   const isTimerFromRoll = activeTimer?.source === "roll"; // Check if timer was from this page
   const isTimerFromDifferentPage = !!activeTimer && activeTimer.source === "spin"; // Only different if explicitly from spin
+
+  // Can roll if: no active timer from a different page (initial rolls are FREE)
+  // Only need coins when re-rolling (skipping an active timer from this page)
+  const canRoll = !isTimerFromDifferentPage;
+  const canSkip = coins >= getSkipCost(); // Need coins to skip/re-roll
 
   const playerTotal = playerDice[0] + playerDice[1];
   const systemTotal = systemDice[0] + systemDice[1];
@@ -124,7 +180,7 @@ export default function RollPage() {
       return;
     }
 
-    // If there's an active timer from this page, charge coins to skip
+    // If there's an active timer from this page, user is trying to skip/re-roll
     if (activeTimer && activeTimer.source === "roll") {
       const skipCost = getSkipCost();
       if (coins < skipCost) {
@@ -132,15 +188,18 @@ export default function RollPage() {
         setTimeout(() => setShowTimerWarning(false), 3000);
         return;
       }
-      // Spend coins to skip
-      addCoins(-skipCost);
-      clearTimer();
-      setUserChoice(null);
-      setPlayerDice([0, 0]);
-      setSystemDice([0, 0]);
-      setWinner(null);
-      setRewardItem(null);
-      setGameState("choosing");
+      // Use the skip function which handles coin deduction and cost escalation
+      const skipped = useSkip();
+      if (skipped) {
+        clearTimer();
+        setUserChoice(null);
+        setPlayerDice([0, 0]);
+        setSystemDice([0, 0]);
+        setWinner(null);
+        setRewardItem(null);
+        setGameState("choosing");
+        localStorage.removeItem('rollPageState');
+      }
       return;
     }
 
@@ -190,11 +249,12 @@ export default function RollPage() {
         }, 3000);
       }
     }, 5000);
-  }, [userChoice, gameState, determineReward, activeTimer, getSkipCost, coins, isTimerFromDifferentPage, addCoins, clearTimer]);
+  }, [userChoice, gameState, determineReward, activeTimer, getSkipCost, coins, isTimerFromDifferentPage, addCoins, clearTimer, useSkip]);
 
   const handleChoice = (choice: UserChoice) => {
     if (gameState === "choosing") {
       setUserChoice(choice);
+      // Don't clear yet - let user confirm with roll
     }
   };
 
@@ -207,6 +267,7 @@ export default function RollPage() {
     setRewardItem(null);
     setRewardPriority("medium");
     clearTimer();
+    localStorage.removeItem('rollPageState');
   };
 
   const handleCollectAttempt = () => {
@@ -224,6 +285,7 @@ export default function RollPage() {
       }
 
       setShowCollectConfirm(false);
+      localStorage.removeItem('rollPageState');
       handleRewardComplete();
     }
   };
@@ -235,16 +297,23 @@ export default function RollPage() {
       setTimeout(() => setShowTimerWarning(false), 3000);
       return;
     }
+    setShowReRollConfirm(true);
+  };
+
+  const handleConfirmReRoll = () => {
+    const skipCost = getSkipCost();
     // Spend coins to re-roll
     addCoins(-skipCost);
     clearTimer();
+    setShowReRollConfirm(false);
     setGameState("choosing");
-    setUserChoice(null);
+    // Keep userChoice so they don't have to re-select
     setPlayerDice([0, 0]);
     setSystemDice([0, 0]);
     setWinner(null);
     setRewardItem(null);
     setRewardPriority("medium");
+    localStorage.removeItem('rollPageState');
   };
 
   return (
@@ -431,20 +500,20 @@ export default function RollPage() {
                 <motion.button
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: !isTimerFromDifferentPage && canRoll ? 1.1 : 1 }}
-                  whileTap={{ scale: !isTimerFromDifferentPage && canRoll ? 0.9 : 1 }}
+                  whileHover={{ scale: !isTimerFromDifferentPage && (!isTimerFromRoll || canSkip) ? 1.1 : 1 }}
+                  whileTap={{ scale: !isTimerFromDifferentPage && (!isTimerFromRoll || canSkip) ? 0.9 : 1 }}
                   onClick={handleRoll}
-                  disabled={!userChoice || !canRoll || isTimerFromDifferentPage}
+                  disabled={!userChoice || isTimerFromDifferentPage || (isTimerFromRoll && !canSkip)}
                   className={`px-16 py-6 rounded-lg border-4 font-black text-3xl shadow-lg transition-all ${
-                    isTimerFromDifferentPage || !canRoll
+                    isTimerFromDifferentPage || (isTimerFromRoll && !canSkip)
                       ? "bg-gray-500 dark:bg-gray-600 text-gray-700 dark:text-gray-400 border-gray-400 cursor-not-allowed opacity-50"
-                      : activeTimer
+                      : isTimerFromRoll
                       ? "bg-gradient-to-r from-orange-600 to-orange-800 text-white border-orange-400 hover:from-orange-500 hover:to-orange-700"
                       : "bg-gradient-to-r from-red-600 to-red-800 text-white border-red-400 hover:from-red-500 hover:to-red-700"
                   }`}
                   style={{ fontFamily: "Courier New, monospace" }}
                 >
-                  {activeTimer && !isTimerFromDifferentPage ? `🎲 ROLL (${getSkipCost()} coins)` : "🎲 ROLL"}
+                  {isTimerFromRoll ? `🎲 ROLL (${getSkipCost()} coins)` : "🎲 ROLL"}
                 </motion.button>
               )}
             </div>
@@ -568,6 +637,18 @@ export default function RollPage() {
           onConfirm={handleConfirmCollect}
           onCancel={() => setShowCollectConfirm(false)}
           type="success"
+        />
+
+        {/* Confirmation Dialog for Re-Rolling */}
+        <ConfirmationDialog
+          isOpen={showReRollConfirm}
+          title="Re-Roll for a New Reward?"
+          message={`Re-roll and lose this reward? This will cost ${getSkipCost()} coins.`}
+          confirmText={`Re-Roll (${getSkipCost()} coins)`}
+          cancelText="Keep Reward"
+          onConfirm={handleConfirmReRoll}
+          onCancel={() => setShowReRollConfirm(false)}
+          type="warning"
         />
       </div>
     </main>
