@@ -1,16 +1,16 @@
 Date: 04/15/26
 
 Updates:
+- Database error (Log out and refresh)
+- Fixed the timer issue
 - Spin Page
   - Fixed an UX issue
+- Bet Page
+  - Emoji out of bounds
 - Roll Page
+  - Coin issue
 
 
 To Update:
-- Database error (Log out and refresh)
-- Two features are broken
-- Timer issue
-- Bet Page
-  - Emoji out of bounds
 - Add email confirmation
 - Deployment

@@ -27,6 +27,11 @@ export async function POST(request: NextRequest) {
       throw new APIError(401, "Failed to sign in");
     }
 
+    // Check if email is verified
+    if (!data.user.email_confirmed_at) {
+      throw new APIError(403, "Please verify your email before signing in. Check your email for a verification link.");
+    }
+
     // Get user profile using admin client
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("user_profiles")

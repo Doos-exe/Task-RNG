@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTaskStore } from "@/lib/store";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 
 interface ResultTimerProps {
   result: string | null;
@@ -12,7 +13,7 @@ interface ResultTimerProps {
 }
 
 export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }: ResultTimerProps) {
-  const { activeTimer, clearTimer } = useTaskStore();
+  const { activeTimer, clearTimer, tasks, removeTask, leisures } = useTaskStore();
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
   const [showCompletion, setShowCompletion] = useState(false);
@@ -20,6 +21,8 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [showTaskConfirm, setShowTaskConfirm] = useState(false);
+  const [showLeisureConfirm, setShowLeisureConfirm] = useState(false);
 
   // Sync with store's timer
   useEffect(() => {
@@ -43,26 +46,18 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
 
       if (remaining <= 0) {
         clearInterval(interval);
-        setShowCompletion(true);
 
-        // Clear the timer from store so user can spin/roll again
-        clearTimer();
-
-        if (onTaskComplete) {
-          onTaskComplete();
+        // Show appropriate dialog based on task/leisure
+        if (activeTimer.isTask) {
+          setShowTaskConfirm(true);
+        } else {
+          setShowLeisureConfirm(true);
         }
-
-        // Hide completion message after 3 seconds
-        const hideTimer = setTimeout(() => {
-          setShowCompletion(false);
-        }, 3000);
-
-        return () => clearTimeout(hideTimer);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeTimer, clearTimer, onTaskComplete]);
+  }, [activeTimer]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -90,6 +85,23 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
 
   const handlePointerUp = () => {
     setIsDragging(false);
+  };
+
+  const handleTaskComplete = (finished: boolean) => {
+    if (finished) {
+      // Remove the task from the store
+      const task = tasks.find(t => t.title === activeTimer?.result);
+      if (task) {
+        removeTask(task.id);
+      }
+    }
+    setShowTaskConfirm(false);
+    clearTimer();
+  };
+
+  const handleLeisureContinue = () => {
+    setShowLeisureConfirm(false);
+    clearTimer();
   };
 
   const progressPercent = totalTime > 0 ? (timeLeft / totalTime) * 100 : 0;
@@ -145,35 +157,60 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
           <p className="text-xs font-bold text-yellow-300 mt-4 uppercase tracking-wider">
             {timeLeft > 0 ? "⏱️ In Progress" : "✓ Complete"}
           </p>
-
-          {/* Skip Button for Testing */}
-          <button
-            onClick={() => clearTimer()}
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded font-bold text-xs transition-all"
-          >
-            ⏭️ Skip (Test)
-          </button>
         </motion.div>
       </motion.div>
 
-      {/* Completion Message */}
+      {/* Task Completion Dialog */}
+      <ConfirmationDialog
+        isOpen={showTaskConfirm}
+        title="Task Complete?"
+        message="Did you finish this task?"
+        confirmText="Yes, Remove Task"
+        cancelText="No, Keep It"
+        onConfirm={() => handleTaskComplete(true)}
+        onCancel={() => handleTaskComplete(false)}
+        type="success"
+      />
+
+      {/* Leisure Completion Dialog */}
       <AnimatePresence>
-        {showCompletion && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.5, y: 20 }}
-            className="fixed bottom-48 left-1/2 -translate-x-1/2 z-50"
-          >
-            <div className="bg-gradient-to-br from-green-600 to-green-800 border-4 border-green-400 rounded-2xl px-8 py-4 shadow-2xl text-center">
-              <p className="text-2xl font-black text-white">
-                {activeTimer.isTask ? "✓ Task Complete!" : "✓ Time's Up!"}
+        {showLeisureConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleLeisureContinue}
+              className="fixed inset-0 bg-black bg-opacity-70 z-[100]"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] bg-gradient-to-br from-gray-900 to-black border-4 border-green-600 rounded-2xl p-8 shadow-2xl max-w-sm"
+            >
+              {/* Title */}
+              <p className="text-2xl font-black mb-4 text-green-400">Time's Up!</p>
+
+              {/* Message */}
+              <p className="text-white text-center mb-8 leading-relaxed">
+                {activeTimer?.result === "Rest"
+                  ? "Rest time is over. Ready to continue?"
+                  : "Game time is over. Ready to continue?"}
               </p>
-              <p className="text-lg font-bold text-green-200 mt-2">
-                You can now spin/roll again freely 🎲
-              </p>
-            </div>
-          </motion.div>
+
+              {/* Button */}
+              <button
+                onClick={handleLeisureContinue}
+                className="w-full py-3 px-4 rounded-lg font-bold text-white bg-green-600 hover:bg-green-500 transition transform hover:scale-105 active:scale-95"
+              >
+                Continue
+              </button>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

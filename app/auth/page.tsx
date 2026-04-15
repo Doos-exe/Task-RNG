@@ -1,4 +1,8 @@
 "use client";
+/*
+  This is the authentication page for users to sign in or sign up.
+  It includes validation for email and password, and email verification flow.
+*/
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +19,10 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [resetMessage, setResetMessage] = useState("");
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [resendEmail, setResendEmail] = useState("");
+  const [resendMessage, setResendMessage] = useState("");
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
 
   const router = useRouter();
   const { signin, signup, isAuthenticated } = useAuth();
@@ -55,7 +63,13 @@ export default function Auth() {
       if (isLogin) {
         const result = await signin(email, password);
         if (result.error) {
-          setErrors({ submit: result.error });
+          if (result.error.includes("verify your email")) {
+            setErrors({ submit: result.error });
+            setPendingVerificationEmail(email);
+            setShowResendVerification(true);
+          } else {
+            setErrors({ submit: result.error });
+          }
         } else {
           setSuccessMessage("Logged in successfully!");
           // Wait a moment before redirecting
@@ -69,6 +83,7 @@ export default function Auth() {
           setSuccessMessage(
             "Sign up successful! Please check your email to verify your account."
           );
+          setPendingVerificationEmail(email);
           setEmail("");
           setPassword("");
           setName("");
@@ -109,6 +124,34 @@ export default function Auth() {
     }
   };
 
+  const handleResendVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResendMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resendEmail || pendingVerificationEmail }),
+      });
+
+      if (response.ok) {
+        setResendMessage(
+          "Verification email sent! Please check your inbox and spam folder."
+        );
+        setResendEmail("");
+      } else {
+        const { error } = await response.json();
+        setResendMessage(error || "Failed to resend verification email");
+      }
+    } catch (error) {
+      setResendMessage("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -119,8 +162,65 @@ export default function Auth() {
             <p className="text-gray-600 dark:text-gray-400">Let fate decide your tasks</p>
           </div>
 
-          {/* Forgot Password View */}
-          {showForgotPassword ? (
+          {/* Resend Verification View */}
+          {showResendVerification ? (
+            <div>
+              <form onSubmit={handleResendVerification} className="space-y-4">
+                <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-600 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
+                    📧 Email Verification Required
+                  </p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
+                    Please verify your email to complete sign-up. We'll send you a verification link.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">Email</label>
+                  <input
+                    type="email"
+                    value={resendEmail || pendingVerificationEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white"
+                  />
+                </div>
+
+                {resendMessage && (
+                  <p
+                    className={`text-sm p-3 rounded ${
+                      resendMessage.includes("sent")
+                        ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700"
+                        : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700"
+                    }`}
+                  >
+                    {resendMessage}
+                  </p>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Sending..." : "Resend Verification Email"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResendVerification(false);
+                      setResendMessage("");
+                      setResendEmail("");
+                    }}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    Back
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : showForgotPassword ? (
             <div>
               <form onSubmit={handlePasswordReset} className="space-y-4">
                 <div>
@@ -295,8 +395,7 @@ export default function Auth() {
               {/* Info Notice */}
               <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg text-sm border border-blue-200 dark:border-blue-700">
                 <p className="text-gray-800 dark:text-gray-200">
-                  <strong>Email Verification Required:</strong> Check your email after signing up
-                  to verify your account before accessing the app.
+                  <strong>📧 Email Verification Required:</strong> After signing up, check your email to verify your account before you can sign in. If you didn't receive an email, click "Resend Verification Email" on the error screen.
                 </p>
               </div>
             </>
@@ -306,4 +405,3 @@ export default function Auth() {
     </main>
   );
 }
-

@@ -1,4 +1,8 @@
 "use client";
+/*
+  This is the bet page where users can manage their tasks and leisure activities.
+  Users can add, edit, and delete tasks and leisure activities.
+*/
 
 import { useState } from "react";
 import { useTaskStore, Task, Leisure } from "@/lib/store";
@@ -28,7 +32,7 @@ export default function TasksPage() {
 
   const handleAddLeisure = () => {
     if (leisureInput.trim()) {
-      addLeisure(leisureInput.trim());
+      addLeisure(leisureInput.trim(), leisureEmoji);
       setLeisureInput("");
       setLeisureEmoji("🎯");
     }

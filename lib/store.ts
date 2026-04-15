@@ -59,7 +59,7 @@ interface TaskStore {
   checkAndResetSkipCostIfNewDay: () => void;
   useSkip: () => boolean;
   setTheme: (theme: "light" | "dark") => void;
-  addLeisure: (title: string) => void;
+  addLeisure: (title: string, emoji?: string) => void;
   removeLeisure: (id: string) => void;
   updateLeisure: (id: string, title: string) => void;
   updateLeisureEmoji: (id: string, emoji: string) => void;
@@ -308,7 +308,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       return newState;
     }),
 
-  addLeisure: (title) =>
+  addLeisure: (title, emoji: string = "🎯") =>
     set((state) => {
       const newState = {
         ...state,
@@ -317,7 +317,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
           {
             id: Date.now().toString(),
             title,
-            emoji: "🎯",
+            emoji,
             createdAt: Date.now(),
             isDefault: false,
           },

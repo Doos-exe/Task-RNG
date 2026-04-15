@@ -281,20 +281,28 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
     if (isOpen && buttonRef.current && pickerRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const pickerWidth = 384; // w-96 = 24rem = 384px
+      const pickerHeight = 320; // max-h-80 = 320px (approximate)
       const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
       let left = rect.left;
+      let top = rect.bottom + 8; // Position below button by default
 
       // Check if picker would go off-screen to the right
       if (rect.left + pickerWidth > viewportWidth) {
-        // Align to the right edge of the button instead
-        left = Math.max(8, rect.right - pickerWidth);
+        // Align to the right edge with padding
+        left = Math.max(8, viewportWidth - pickerWidth - 8);
+      }
+
+      // Check if picker would go off-screen at the bottom, if so position above
+      if (rect.bottom + pickerHeight + 8 > viewportHeight) {
+        top = rect.top - pickerHeight - 8;
       }
 
       setPickerStyle({
         position: "fixed",
-        left: `${left}px`,
-        top: `${rect.top - pickerRef.current.offsetHeight - 8}px`,
+        left: `${Math.max(0, left)}px`,
+        top: `${Math.max(0, top)}px`,
         zIndex: 9999,
       });
     }
@@ -329,7 +337,7 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-16 px-2 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-white text-center font-semibold text-2xl hover:border-yellow-400 dark:hover:border-yellow-400 transition cursor-pointer"
+        className="min-w-16 px-3 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-white text-center font-semibold text-2xl hover:border-yellow-400 dark:hover:border-yellow-400 transition cursor-pointer overflow-hidden"
         title="Pick an emoji"
       >
         {value || "😊"}
