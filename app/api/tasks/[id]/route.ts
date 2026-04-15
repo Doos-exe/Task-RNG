@@ -5,11 +5,11 @@ import { handleAPIError, requireAuth, APIError } from "@/lib/apiUtils";
 // GET single task
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: taskId } = await params;
     const userId = await requireAuth();
-    const taskId = params.id;
 
     const { data: task, error } = await supabase
       .from("tasks")
@@ -31,11 +31,11 @@ export async function GET(
 // PUT update task
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: taskId } = await params;
     const userId = await requireAuth();
-    const taskId = params.id;
     const body = await request.json();
     const { title, emoji, priority, completed } = body;
 
@@ -78,11 +78,11 @@ export async function PUT(
 // DELETE task
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: taskId } = await params;
     const userId = await requireAuth();
-    const taskId = params.id;
 
     // Verify ownership before deleting
     const { data: existingTask, error: checkError } = await supabase

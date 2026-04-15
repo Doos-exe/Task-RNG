@@ -5,11 +5,11 @@ import { handleAPIError, requireAuth, APIError } from "@/lib/apiUtils";
 // PUT update leisure activity
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: leisureId } = await params;
     const userId = await requireAuth();
-    const leisureId = params.id;
     const body = await request.json();
     const { title, emoji } = body;
 
@@ -50,11 +50,11 @@ export async function PUT(
 // DELETE leisure activity
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: leisureId } = await params;
     const userId = await requireAuth();
-    const leisureId = params.id;
 
     // Verify ownership before deleting
     const { data: existingLeisure, error: checkError } = await supabase
