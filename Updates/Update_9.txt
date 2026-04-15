@@ -9,8 +9,7 @@ Updates:
   - Emoji out of bounds
 - Roll Page
   - Coin issue
-
+- Deployed
 
 To Update:
-- Add email confirmation
-- Deployment
+- Test time

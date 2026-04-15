@@ -386,7 +386,7 @@ export default function RollPage() {
                         >
                           {die > 0 && (
                             <Image
-                              src={diceImages[die]}
+                              src={diceImages[die]!}
                               alt={`Dice ${die}`}
                               width={96}
                               height={96}
@@ -413,7 +413,7 @@ export default function RollPage() {
                         >
                           {die > 0 && (
                             <Image
-                              src={diceImages[die]}
+                              src={diceImages[die]!}
                               alt={`Dice ${die}`}
                               width={96}
                               height={96}
