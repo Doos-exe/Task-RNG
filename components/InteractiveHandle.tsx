@@ -39,8 +39,8 @@ export function InteractiveHandle({ onSpin, isSpinning, canSpin = true, isTimerA
         {/* Draggable Handle */}
         <motion.div
           drag={canSpin ? "y" : false}
-          dragConstraints={constraintsRef}
-          dragElastic={0.3}
+          dragConstraints={{ top: 0, bottom: 240 }}
+          dragElastic={0.2}
           onDragEnd={handleDragEnd}
           onDragStart={() => setIsDragging(true)}
           animate={isSpinning ? { y: 100, rotate: 720 } : { y: 0, rotate: 0 }}
