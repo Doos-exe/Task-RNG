@@ -13,3 +13,5 @@ Updates:
 
 To Update:
 - Test time
+- No email verification
+- Timer broken

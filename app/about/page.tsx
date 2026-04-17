@@ -1,4 +1,8 @@
 "use client";
+/*
+  This is the about page that explains the concept of the website and how to use it.
+  It includes the main features and how the system works.
+*/ 
 
 export default function AboutPage() {
   return (
