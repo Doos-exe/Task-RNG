@@ -12,13 +12,22 @@ export async function POST(request: NextRequest) {
       throw new APIError(400, "Email is required");
     }
 
+    // Get redirect URL
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = request.headers.get('host') || 'localhost:3000';
+    const redirectUrl = `${protocol}://${host}/auth?verified=true`;
+
     // Resend signup email with verification link
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
     });
 
     if (error) {
+      console.error("Resend verification error:", error);
       throw new APIError(400, error.message || "Failed to resend verification email");
     }
 

@@ -35,7 +35,6 @@ A productivity web app with a luck based task management, perfect for people who
 │   ├── roll/page.tsx           # Dice rolling RNG page
 │   ├── bet/page.tsx            # Task/leisure management page
 │   ├── about/page.tsx          # About & features page
-│   ├── personalized/page.tsx   # User profile/settings
 │   └── api/                    # API routes (Supabase integration)
 ├── components/
 │   ├── SlotMachine.tsx         # Spinning reels animation

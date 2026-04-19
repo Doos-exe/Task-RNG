@@ -1,4 +1,8 @@
 "use client";
+/*
+  This is the spin page, the slot machine feature where users spin to get a random task or leisure activity.
+  Pull the handle to spin the slot machine, earn coins, and check your pity progress.
+*/
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { SlotMachine } from "@/components/SlotMachine";

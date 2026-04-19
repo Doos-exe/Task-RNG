@@ -5,7 +5,7 @@
 */
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 
 export default function Auth() {
@@ -23,9 +23,22 @@ export default function Auth() {
   const [resendEmail, setResendEmail] = useState("");
   const [resendMessage, setResendMessage] = useState("");
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signin, signup, isAuthenticated } = useAuth();
+
+  // Handle email verification callback
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    if (verified === "true") {
+      setVerificationSuccess(true);
+      setSuccessMessage("✅ Email verified successfully! You can now sign in.");
+      // Clear the verified parameter from URL
+      router.replace("/auth");
+    }
+  }, [searchParams, router]);
 
   // Redirect to home if already authenticated
   useEffect(() => {
@@ -303,7 +316,11 @@ export default function Auth() {
 
               {/* Messages */}
               {successMessage && (
-                <div className="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-sm border border-green-200 dark:border-green-700">
+                <div className={`mb-4 p-3 rounded-lg text-sm border ${
+                  verificationSuccess
+                    ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700"
+                    : "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700"
+                }`}>
                   {successMessage}
                 </div>
               )}

@@ -1,4 +1,8 @@
 "use client";
+/*
+  This is the home page or the landing page of the website.
+  The main entry point for users to navigate the different features of the website.
+*/
 
 import { PokerChip } from "@/components/PokerChip";
 
