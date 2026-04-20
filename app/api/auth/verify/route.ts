@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Verify the token with Supabase
     const { data, error } = await supabase.auth.verifyOtp({
       token_hash: token,
-      type: type as "signup" | "recovery" | "invite" | "magiclink" | "email_change" | "phone_change",
+      type: type as "signup" | "recovery" | "invite" | "magiclink" | "email_change",
     });
 
     if (error) {
