@@ -17,7 +17,7 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
   const [showCompletion, setShowCompletion] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: window.innerWidth / 2 - 128, y: window.innerHeight - 200 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
@@ -71,6 +71,7 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
@@ -116,11 +117,11 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         style={{ x: position.x, y: position.y }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50 cursor-grab active:cursor-grabbing"
+        className="fixed flex flex-col items-center gap-4 z-50 cursor-grab active:cursor-grabbing user-select-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -132,7 +133,7 @@ export function ResultTimer({ result, isStarted, onTaskComplete, taskPriority }:
         <motion.div
           animate={{ opacity: isHovering ? 1 : 0.2 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-600 rounded-2xl p-8 shadow-2xl min-w-64 text-center"
+          className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-600 rounded-2xl p-8 shadow-2xl min-w-64 text-center select-none"
         >
           {/* Activity Type */}
           <p className="text-sm font-black text-yellow-400 uppercase tracking-widest mb-2">

@@ -1,4 +1,8 @@
 "use client";
+/*
+  This is the roll page, the dice game for users to play if they want a task or leisure but do not know what to do.
+  Users choose if they want to bet their tasks or leisure and fight against the system in a dice roll.
+*/
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";

@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Sign up with Supabase Auth
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = request.headers.get('host') || 'localhost:3000';
+    const redirectUrl = `${protocol}://${host}/auth?verified=true`;
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -35,10 +39,12 @@ export async function POST(request: NextRequest) {
         data: {
           name,
         },
+        emailRedirectTo: redirectUrl,
       },
     });
 
     if (error) {
+      console.error("Supabase signup error:", error);
       throw new APIError(400, error.message);
     }
 
