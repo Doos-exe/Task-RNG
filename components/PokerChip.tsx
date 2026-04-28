@@ -15,7 +15,7 @@ export function PokerChip({ label, href, className = "" }: PokerChipProps) {
   return (
     <Link href={href}>
       <div
-        className={`w-64 h-64 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform relative ${className}`}
+        className={`w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform relative ${className}`}
         style={{
           backgroundImage: `url(/Elements/${theme === "dark" ? "DarkMode" : "LightMode"}.png)`,
           backgroundSize: "contain",
@@ -23,12 +23,11 @@ export function PokerChip({ label, href, className = "" }: PokerChipProps) {
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* Text on top of image */}
         <span
           className={`${theme === "dark" ? "text-white" : "text-black"} text-center relative z-10 drop-shadow-lg px-3 break-words`}
           style={{
             fontFamily: "'Playfair Display', serif",
-            fontSize: "1.3rem",
+            fontSize: "clamp(0.65rem, 2.5vw, 1.3rem)",
             fontWeight: 900,
             letterSpacing: "0.02em",
             lineHeight: "1.1",
@@ -42,4 +41,3 @@ export function PokerChip({ label, href, className = "" }: PokerChipProps) {
     </Link>
   );
 }
-

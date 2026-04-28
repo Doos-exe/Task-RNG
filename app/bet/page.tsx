@@ -103,9 +103,9 @@ export default function TasksPage() {
   };
 
   return (
-    <main className="ml-96 min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-8">
+    <main className="min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>Bet</h1>
+        <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>Bet</h1>
 
         {/* Add Task Input */}
         <div className="mb-8 space-y-4">
