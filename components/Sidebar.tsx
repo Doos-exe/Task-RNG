@@ -12,25 +12,43 @@ import logo from "@/Elements/TaskRNG_Logo.png";
 
 const EMOJIS = ["🎲", "🎮", "🎯", "🎪", "🎨", "🎭", "🎬", "🎤", "🎧", "🎸", "🎹", "🏆", "💎", "⭐", "✨", "🔥", "💫", "🎰", "🃏", "🌟"];
 
-function SlotMachineReel({ speed = 1 }) {
-  const reelEmojis = Array(50).fill(EMOJIS).flat();
+const ITEM_H = 48;
+// One full emoji cycle: y=0 and y=-CYCLE_H show the same content, so the loop reset is invisible.
+const CYCLE_H = EMOJIS.length * ITEM_H;
+const REEL_ITEMS = Array(6).fill(EMOJIS).flat() as string[];
 
+function SlotMachineReel({ speed = 1 }: { speed?: number }) {
   return (
-    <div className="flex-1 h-full border-4 border-yellow-500 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-md shadow-md overflow-hidden flex items-center justify-center">
+    <div
+      className="flex-1 min-h-0 rounded-md border-[3px] border-yellow-500 bg-black overflow-hidden relative"
+      style={{ boxShadow: "inset 0 6px 18px rgba(0,0,0,0.95), inset 0 -6px 18px rgba(0,0,0,0.95)" }}
+    >
+      {/* top fade */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-10"
+        style={{ height: 40, background: "linear-gradient(to bottom, #000 25%, transparent)" }}
+      />
+      {/* bottom fade */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
+        style={{ height: 40, background: "linear-gradient(to top, #000 25%, transparent)" }}
+      />
       <motion.div
-        animate={{ y: 2000 }}
+        initial={{ y: 0 }}
+        animate={{ y: -CYCLE_H }}
         transition={{
-          duration: 20 / speed,
+          duration: 8 / speed,
           repeat: Infinity,
           ease: "linear",
+          repeatType: "loop",
         }}
-        className="flex flex-col gap-2"
-        style={{ y: -2000 }}
+        className="flex flex-col"
       >
-        {reelEmojis.map((emoji, idx) => (
+        {REEL_ITEMS.map((emoji, idx) => (
           <div
             key={idx}
-            className="text-4xl font-black text-center"
+            style={{ height: ITEM_H, flexShrink: 0 }}
+            className="flex items-center justify-center text-2xl"
           >
             {emoji}
           </div>
@@ -108,12 +126,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Middle: Slot Machine Reels - 3 Horizontally */}
-        <div className="flex-1 flex flex-col items-center justify-center px-3 py-8 min-h-0">
-          <div className="flex gap-3 justify-center items-center h-full w-full">
-            <SlotMachineReel speed={1} />
-            <SlotMachineReel speed={0.8} />
-            <SlotMachineReel speed={1.2} />
-          </div>
+        <div className="flex-1 flex gap-2 px-3 py-6 min-h-0">
+          <SlotMachineReel speed={1} />
+          <SlotMachineReel speed={0.8} />
+          <SlotMachineReel speed={1.2} />
         </div>
 
         {/* Bottom: User Info and Logout */}
