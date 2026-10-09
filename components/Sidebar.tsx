@@ -34,8 +34,8 @@ function SlotMachineReel({ speed = 1 }: { speed?: number }) {
         style={{ height: 40, background: "linear-gradient(to top, #000 25%, transparent)" }}
       />
       <motion.div
-        initial={{ y: 0 }}
-        animate={{ y: -CYCLE_H }}
+        initial={{ y: -CYCLE_H }}
+        animate={{ y: 0 }}
         transition={{
           duration: 8 / speed,
           repeat: Infinity,

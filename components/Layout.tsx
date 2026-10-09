@@ -24,15 +24,15 @@ function Pocket() {
   return (
     <div
       style={{
-        width: 72,
-        height: 72,
+        width: 54,
+        height: 54,
         borderRadius: "50%",
         flexShrink: 0,
         pointerEvents: "none",
         background: `radial-gradient(circle at 50% 50%,
-          #000 0%, #000 30%,
-          #0f0400 42%, #271005 56%,
-          transparent 74%
+          #000 0%, #000 34%,
+          #0f0400 48%, #271005 63%,
+          transparent 78%
         )`,
         boxShadow: "inset 0 6px 28px rgba(0,0,0,1), inset 0 -4px 14px rgba(0,0,0,0.75)",
       }}
@@ -44,11 +44,11 @@ const LINK_STYLE: React.CSSProperties = {
   fontFamily: "Courier New, monospace",
   fontSize: 11,
   fontWeight: 700,
-  color: "#d4a050",
+  color: "#241006",
   textDecoration: "none",
   textTransform: "uppercase",
   letterSpacing: "0.14em",
-  textShadow: "0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(180,130,40,0.25)",
+  textShadow: "1px 1px 0 rgba(255,150,65,0.12), -1px -1px 1px rgba(0,0,0,0.35)",
 };
 
 export function Layout({ children }: LayoutProps) {
@@ -96,7 +96,7 @@ export function Layout({ children }: LayoutProps) {
             className="absolute flex items-center justify-center pointer-events-none"
             style={{ left: 20, right: "calc(50% + 44px)", top: "50%", transform: "translateY(-50%)" }}
           >
-            <span style={{ ...LINK_STYLE, color: "#a07838", letterSpacing: "0.2em" }}>
+            <span style={{ ...LINK_STYLE, color: "#241006", letterSpacing: "0.2em" }}>
               ◆&nbsp; TASK RNG &nbsp;◆
             </span>
           </div>
@@ -147,13 +147,13 @@ export function Layout({ children }: LayoutProps) {
 
         {/* Pocket holes — centred on the felt/wood boundary (top: -36 = half of 72px height)
             Corner pockets bleed past the viewport edge; the browser clips them naturally. */}
-        <div className="absolute pointer-events-none" style={{ left: -36, top: -36 }}>
+        <div className="absolute pointer-events-none" style={{ left: -27, top: -27 }}>
           <Pocket />
         </div>
-        <div className="absolute pointer-events-none" style={{ left: "50%", top: -36, transform: "translateX(-50%)" }}>
+        <div className="absolute pointer-events-none" style={{ left: "50%", top: -27, transform: "translateX(-50%)" }}>
           <Pocket />
         </div>
-        <div className="absolute pointer-events-none" style={{ right: -36, top: -36 }}>
+        <div className="absolute pointer-events-none" style={{ right: -27, top: -27 }}>
           <Pocket />
         </div>
       </footer>
