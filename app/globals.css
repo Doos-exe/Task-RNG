@@ -37,3 +37,55 @@ html.dark body {
     font-family: "Inter var", system-ui, -apple-system, sans-serif;
   }
 }
+
+/* Pool-table felt weave — light mode (green baize) */
+html:not(.dark) .bg-app-lightMain {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent, transparent 2px,
+      rgba(0, 0, 0, 0.055) 2px, rgba(0, 0, 0, 0.055) 3px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent, transparent 2px,
+      rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent, transparent 5px,
+      rgba(0, 0, 0, 0.018) 5px, rgba(0, 0, 0, 0.018) 6px
+    ),
+    radial-gradient(ellipse 110% 55% at 50% -5%, rgba(255, 255, 255, 0.09) 0%, transparent 65%);
+}
+/* Pool-table felt weave — dark mode (dark blue baize) */
+.dark .bg-app-darkMain {
+  background-color: #0A1941;
+  background-image:
+    /* fine felt fibers */
+    repeating-linear-gradient(
+      112deg,
+      rgba(94, 145, 190, 0.09) 0px,
+      rgba(94, 145, 190, 0.09) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      22deg,
+      rgba(0, 0, 0, 0.11) 0px,
+      rgba(0, 0, 0, 0.11) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    /* short nap bands and natural mottling */
+    repeating-linear-gradient(
+      0deg,
+      rgba(65, 112, 157, 0.055) 0px,
+      rgba(65, 112, 157, 0.055) 2px,
+      transparent 2px,
+      transparent 9px
+    ),
+    radial-gradient(ellipse 90% 65% at 50% 35%, rgba(42, 94, 143, 0.18) 0%, transparent 72%),
+    radial-gradient(ellipse 100% 40% at 50% 105%, rgba(0, 0, 0, 0.22) 0%, transparent 70%);
+  background-blend-mode: screen, multiply, screen, normal, multiply;
+}

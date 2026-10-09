@@ -44,7 +44,7 @@ export function ConfirmationDialog({
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] bg-gradient-to-br from-gray-900 to-black border-4 ${borderColor} rounded-2xl p-8 shadow-2xl max-w-sm`}
+            className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] bg-gradient-to-br from-gray-900 to-black border-4 ${borderColor} rounded-2xl p-6 md:p-8 shadow-2xl w-[90vw] max-w-sm`}
           >
             {/* Title */}
             <p className={`text-2xl font-black mb-4 ${titleColor}`}>{title}</p>
