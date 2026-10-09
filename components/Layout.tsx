@@ -18,7 +18,7 @@ const WOOD_BG = `
   )
 `;
 
-// Pocket sits at the felt/wood boundary — edge fades to transparent so it blends with
+// Pocket sits at the felt/wood boundary ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â edge fades to transparent so it blends with
 // the green felt above and the wood grain below, looking carved into the junction.
 function Pocket() {
   return (
@@ -62,7 +62,7 @@ export function Layout({ children }: LayoutProps) {
         onClick={() => setSidebarOpen(true)}
         aria-label="Open menu"
       >
-        ☰
+        ÃƒÂ¢Ã‹Å“Ã‚Â°
       </button>
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -91,24 +91,14 @@ export function Layout({ children }: LayoutProps) {
             boxShadow: "0 -10px 24px rgba(0,0,0,0.7), inset 0 5px 12px rgba(220,160,80,0.09)",
           }}
         >
-          {/* Left section — decorative label */}
-          <div
-            className="absolute flex items-center justify-center pointer-events-none"
-            style={{ left: 20, right: "calc(50% + 44px)", top: "50%", transform: "translateY(-50%)" }}
-          >
-            <span style={{ ...LINK_STYLE, color: "#241006", letterSpacing: "0.2em" }}>
-              ◆&nbsp; TASK RNG &nbsp;◆
-            </span>
-          </div>
-
-          {/* Right section — programmer links */}
+          {/* Right section ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â programmer links */}
           {/* TODO: replace href values with your actual URLs */}
           <div
             className="absolute flex items-center justify-center gap-4"
             style={{ left: "calc(50% + 44px)", right: 20, top: "50%", transform: "translateY(-50%)" }}
           >
             <a
-              href="https://github.com/Doos"
+              href="https://github.com/Doos-exe"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-70 transition-opacity"
@@ -116,9 +106,8 @@ export function Layout({ children }: LayoutProps) {
             >
               GitHub
             </a>
-            <span style={{ ...LINK_STYLE, color: "#6b4a22" }}>·</span>
             <a
-              href="#"
+              href="https://deuxmarquez-portfolio.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-70 transition-opacity"
@@ -126,14 +115,8 @@ export function Layout({ children }: LayoutProps) {
             >
               Portfolio
             </a>
-            <span style={{ ...LINK_STYLE, color: "#6b4a22" }}>·</span>
-            <a
-              href="mailto:deuxm29.com@gmail.com"
-              className="hover:opacity-70 transition-opacity"
-              style={LINK_STYLE}
-            >
-              Contact
-            </a>
+
+
           </div>
         </div>
 
@@ -145,7 +128,7 @@ export function Layout({ children }: LayoutProps) {
           }}
         />
 
-        {/* Pocket holes — centred on the felt/wood boundary (top: -36 = half of 72px height)
+        {/* Pocket holes ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â centred on the felt/wood boundary (top: -36 = half of 72px height)
             Corner pockets bleed past the viewport edge; the browser clips them naturally. */}
         <div className="absolute pointer-events-none" style={{ left: -27, top: -27 }}>
           <Pocket />
