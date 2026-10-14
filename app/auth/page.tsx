@@ -166,20 +166,20 @@ export default function Auth() {
   };
 
   return (
-    <main className="min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-app-darkMain rounded-lg border border-gray-300 dark:border-gray-700 p-8 shadow-lg">
+    <main className="app-page flex items-center justify-center p-4 text-app-lightText dark:text-app-darkText">
+      <div className="w-full max-w-lg">
+        <div className="app-surface rounded-3xl p-6 shadow-2xl md:p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2 text-black dark:text-white">Task RNG</h1>
-            <p className="text-gray-600 dark:text-gray-400">Let fate decide your tasks</p>
+            <p className="eyebrow mb-3">Welcome to the table</p><h1 className="page-title text-4xl">Task RNG</h1>
+            <p className="page-subtitle mx-auto mt-3 text-sm">A playful decision desk for getting unstuck.</p>
           </div>
 
           {/* Resend Verification View */}
           {showResendVerification ? (
             <div>
               <form onSubmit={handleResendVerification} className="space-y-4">
-                <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-600 rounded-lg p-4 mb-4">
+                <div className="mb-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
                     📧 Email Verification Required
                   </p>
@@ -189,13 +189,13 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">Email</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--app-ink)]">Email</label>
                   <input
                     type="email"
                     value={resendEmail || pendingVerificationEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white"
+                    className="app-field w-full"
                   />
                 </div>
 
@@ -215,7 +215,7 @@ export default function Auth() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                    className="app-button app-button-primary flex-1 disabled:opacity-50"
                   >
                     {isSubmitting ? "Sending..." : "Resend Verification Email"}
                   </button>
@@ -226,7 +226,7 @@ export default function Auth() {
                       setResendMessage("");
                       setResendEmail("");
                     }}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                    className="app-button app-button-ghost flex-1"
                   >
                     Back
                   </button>
@@ -237,13 +237,13 @@ export default function Auth() {
             <div>
               <form onSubmit={handlePasswordReset} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">Email</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--app-ink)]">Email</label>
                   <input
                     type="email"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white"
+                    className="app-field w-full"
                     required
                   />
                 </div>
@@ -263,7 +263,7 @@ export default function Auth() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                  className="app-button app-button-primary w-full disabled:opacity-50"
                 >
                   {isSubmitting ? "Sending..." : "Send Reset Link"}
                 </button>
@@ -274,7 +274,7 @@ export default function Auth() {
                     setShowForgotPassword(false);
                     setResetMessage("");
                   }}
-                  className="w-full text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 py-2"
+                  className="w-full py-2 text-sm font-semibold text-[var(--app-accent)] transition hover:opacity-70"
                 >
                   Back to Login
                 </button>
@@ -283,7 +283,7 @@ export default function Auth() {
           ) : (
             <>
               {/* Tabs */}
-              <div className="flex gap-4 mb-6 border-b border-gray-300 dark:border-gray-700">
+              <div className="mb-6 flex gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-strong)] p-1">
                 <button
                   onClick={() => {
                     setIsLogin(true);
@@ -292,8 +292,8 @@ export default function Auth() {
                   }}
                   className={`flex-1 py-2 px-4 transition-colors ${
                     isLogin
-                      ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-semibold"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300"
+                      ? "rounded-lg bg-[var(--app-ink)] text-[var(--app-surface-strong)] font-semibold shadow-sm"
+                      : "text-[var(--app-muted)] hover:text-[var(--app-ink)]"
                   }`}
                 >
                   Sign In
@@ -306,8 +306,8 @@ export default function Auth() {
                   }}
                   className={`flex-1 py-2 px-4 transition-colors ${
                     !isLogin
-                      ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-semibold"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300"
+                      ? "rounded-lg bg-[var(--app-ink)] text-[var(--app-surface-strong)] font-semibold shadow-sm"
+                      : "text-[var(--app-muted)] hover:text-[var(--app-ink)]"
                   }`}
                 >
                   Sign Up
@@ -336,12 +336,12 @@ export default function Auth() {
                 {/* Name Field (Sign Up Only) */}
                 {!isLogin && (
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">Name</label>
+                    <label className="block text-sm font-medium mb-2 text-[var(--app-ink)]">Name</label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white ${
+                      className={`app-field w-full ${
                         errors.name ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                       }`}
                       placeholder="Enter your name"
@@ -354,12 +354,12 @@ export default function Auth() {
 
                 {/* Email Field */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">Email</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--app-ink)]">Email</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white ${
+                    className={`app-field w-full ${
                       errors.email ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                     }`}
                     placeholder="Enter your email"
@@ -371,12 +371,12 @@ export default function Auth() {
 
                 {/* Password Field */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">Password</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--app-ink)]">Password</label>
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white ${
+                    className={`app-field w-full ${
                       errors.password
                         ? "border-red-500"
                         : "border-gray-300 dark:border-gray-600"
@@ -392,7 +392,7 @@ export default function Auth() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 mt-6 disabled:opacity-50"
+                  className="app-button app-button-primary mt-6 w-full disabled:opacity-50"
                 >
                   {isSubmitting ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
                 </button>
@@ -402,7 +402,7 @@ export default function Auth() {
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
-                    className="w-full text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm py-2"
+                    className="w-full py-2 text-sm font-semibold text-[var(--app-accent)] transition hover:opacity-70"
                   >
                     Forgot Password?
                   </button>
@@ -410,8 +410,8 @@ export default function Auth() {
               </form>
 
               {/* Info Notice */}
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg text-sm border border-blue-200 dark:border-blue-700">
-                <p className="text-gray-800 dark:text-gray-200">
+              <div className="app-surface-flat mt-6 rounded-2xl p-4 text-sm">
+                <p className="text-[var(--app-ink)]">
                   <strong>📧 Email Verification Required:</strong> After signing up, check your email to verify your account before you can sign in. If you didn't receive an email, click "Resend Verification Email" on the error screen.
                 </p>
               </div>

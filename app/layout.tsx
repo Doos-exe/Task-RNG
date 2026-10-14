@@ -3,8 +3,8 @@ import "./globals.css";
 import { RootLayoutClient } from "@/components/RootLayoutClient";
 
 export const metadata: Metadata = {
-  title: "Task RNG",
-  description: "Let fate decide your tasks",
+  title: "Task RNG | Playful productivity",
+  description: "A playful productivity desk for making the next move easier.",
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-task-lightBg text-task-lightText dark:bg-task-main dark:text-white font-sans">
+      <body className="bg-app-lightMain text-app-lightText dark:bg-app-darkMain dark:text-app-darkText font-sans">
         <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>

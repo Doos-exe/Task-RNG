@@ -146,33 +146,33 @@ export default function SpinPage() {
   const hasNoPendingTasks = pendingTasks === 0;
 
   return (
-    <main className="min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-4 md:p-8">
-      <div className="flex flex-col items-center justify-start pt-2">
+    <main className="app-page text-app-lightText dark:text-app-darkText">
+      <div className="app-page-inner flex flex-col items-center justify-start pt-2">
 
         {/* Header */}
-        <div className="w-full max-w-4xl mb-6 md:mb-8">
+        <div className="w-full max-w-5xl mb-6 md:mb-8">
           {/* Title row */}
-          <h1 className="text-2xl md:text-4xl font-black tracking-wider text-center mb-3" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>
-            📍 PULL TO WIN!
-          </h1>
+          <div className="mb-5">
+            <p className="eyebrow mb-3 text-center">Slot machine mode</p>
+            <h1 className="page-title text-center">Pull to win.</h1>
+            <p className="page-subtitle mx-auto mt-3 text-center">Let the reels choose one focused move from your table.</p>
+          </div>
 
           {/* Coins + Pity row */}
-          <div className="flex justify-between items-center px-2 md:px-8">
+          <div className="app-surface flex flex-col justify-between gap-4 rounded-2xl p-4 md:flex-row md:items-center md:px-6">
             {/* Coins */}
-            <p className="text-lg md:text-xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>
-              💰 {coins}
-            </p>
+            <div className="status-chip text-sm"><span>💰</span> Coins <strong>{coins}</strong></div>
 
             {/* Pity System */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 md:items-end">
               <p className="text-xs font-black text-purple-500 uppercase tracking-widest text-right" style={{ fontFamily: "Courier New, monospace" }}>
                 🛡️ Pity
               </p>
               <div className="flex items-center gap-1 md:gap-2">
                 <span className="text-sm font-black">📋</span>
-                <div className="w-16 md:w-32 h-4 md:h-6 bg-gray-700 border-2 border-blue-500 rounded-lg overflow-hidden">
+                <div className="h-2.5 w-24 overflow-hidden rounded-full bg-slate-900/70 md:w-32">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-sky-400 to-blue-500 transition-all duration-300"
                     style={{ width: `${(taskConsecutiveCount / 4) * 100}%` }}
                   />
                 </div>
@@ -180,9 +180,9 @@ export default function SpinPage() {
               </div>
               <div className="flex items-center gap-1 md:gap-2">
                 <span className="text-sm font-black">🎮</span>
-                <div className="w-16 md:w-32 h-4 md:h-6 bg-gray-700 border-2 border-purple-500 rounded-lg overflow-hidden">
+                <div className="h-2.5 w-24 overflow-hidden rounded-full bg-slate-900/70 md:w-32">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-fuchsia-400 to-violet-500 transition-all duration-300"
                     style={{ width: `${(leisureConsecutiveCount / 4) * 100}%` }}
                   />
                 </div>
@@ -193,18 +193,18 @@ export default function SpinPage() {
         </div>
 
         {/* Warnings */}
-        <div className="w-full max-w-4xl px-2" suppressHydrationWarning>
+        <div className="w-full max-w-5xl px-0" suppressHydrationWarning>
           {hasNoPendingTasks && !currentResult && (
-            <div className="mb-6 p-4 md:p-6 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center" suppressHydrationWarning>
-              <p className="text-base md:text-lg font-bold text-yellow-800 dark:text-yellow-200" style={{ fontFamily: "Courier New, monospace" }}>
+            <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-400/10 p-4 text-center md:p-5" suppressHydrationWarning>
+              <p className="text-sm font-semibold text-[var(--app-ink)] md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 ⚠️ No pending tasks! Add tasks to continue spinning.
               </p>
             </div>
           )}
 
           {isTimerFromDifferentPage && (
-            <div className="mb-6 p-4 md:p-6 bg-red-100 dark:bg-red-900 border-2 border-red-600 rounded-lg text-center" suppressHydrationWarning>
-              <p className="text-base md:text-lg font-bold text-red-800 dark:text-red-200" style={{ fontFamily: "Courier New, monospace" }}>
+            <div className="mb-6 rounded-2xl border border-red-400/30 bg-red-400/10 p-4 text-center md:p-5" suppressHydrationWarning>
+              <p className="text-sm font-semibold text-[var(--app-ink)] md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 🎲 Active timer from Roll! Go to Roll page to continue or skip.
               </p>
             </div>
@@ -212,9 +212,9 @@ export default function SpinPage() {
         </div>
 
         {/* Slot Machine Area — centered, horizontally scrollable on small screens */}
-        <div className="w-full overflow-x-auto pb-4" suppressHydrationWarning>
+        <div className="w-full overflow-visible pb-4" suppressHydrationWarning>
           <div className="flex justify-center">
-          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16 shrink-0 px-4 md:px-0">
+          <div className="flex w-full flex-col items-center gap-8 px-2 md:flex-row md:gap-16 md:px-0">
 
             {/* Handle */}
             <InteractiveHandle
@@ -225,7 +225,7 @@ export default function SpinPage() {
             />
 
             {/* Slot Machine */}
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 md:p-12 shadow-2xl border-8 border-yellow-600 relative">
+            <div className="casino-frame relative w-full max-w-3xl rounded-3xl p-4 shadow-2xl md:p-10">
               {/* Decorative lights top */}
               <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex gap-3">
                 <div className="w-4 h-4 rounded-full bg-yellow-400 shadow-lg shadow-yellow-400 animate-pulse" />
@@ -250,7 +250,7 @@ export default function SpinPage() {
             {/* Result Display */}
             {!isSpinning && currentResult && (
               <div className={`flex flex-col items-center gap-8 ${popupResult ? 'blur-sm' : ''} transition-all duration-300`}>
-                <div className="w-40 h-32 bg-gradient-to-b from-yellow-300 to-yellow-200 rounded-2xl border-4 border-yellow-600 flex flex-col items-center justify-center p-4 shadow-lg">
+                <div className="rounded-2xl border border-amber-300/60 bg-gradient-to-b from-amber-200 to-amber-400 p-4 shadow-lg">
                   <div className="text-center">
                     <p className="text-xs font-black text-yellow-700 uppercase mb-2 tracking-widest" style={{ fontFamily: "Courier New, monospace" }}>
                       Result
@@ -264,7 +264,7 @@ export default function SpinPage() {
                 {isTaskResult && (
                   <button
                     onClick={handleCollectAttempt}
-                    className="w-20 h-20 rounded-full font-black text-2xl transition-all shadow-xl transform hover:scale-110 active:scale-95 bg-gradient-to-br from-green-400 to-green-600 text-white cursor-pointer border-4 border-green-700 hover:from-green-300 hover:to-green-500"
+                    className="flex h-16 w-16 transform cursor-pointer items-center justify-center rounded-full border-4 border-emerald-800 bg-gradient-to-br from-emerald-300 to-emerald-600 text-2xl font-black text-white shadow-xl transition-all hover:scale-110 active:scale-95"
                     title="Finish task early and collect coin"
                   >
                     💰
@@ -279,9 +279,9 @@ export default function SpinPage() {
         {/* Popup Notification */}
         {popupResult && (
           <>
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
+            <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" />
             <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce w-[90vw] md:w-auto">
-              <div className="bg-gradient-to-br from-yellow-300 via-yellow-200 to-yellow-100 border-8 border-yellow-600 rounded-3xl px-8 md:px-16 py-8 md:py-12 shadow-2xl">
+              <div className="rounded-3xl border border-amber-300/70 bg-gradient-to-b from-amber-200 to-amber-400 px-8 py-8 shadow-2xl md:px-16 md:py-12">
                 <p className="text-xl md:text-2xl font-black text-yellow-700 uppercase mb-4 tracking-widest text-center" style={{ fontFamily: "Courier New, monospace" }}>
                   You Got:
                 </p>

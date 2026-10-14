@@ -285,18 +285,18 @@ export default function RollPage() {
   };
 
   return (
-    <main className="min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-4 md:p-8">
-      <div className="flex flex-col items-center justify-start pt-2">
+    <main className="app-page text-app-lightText dark:text-app-darkText">
+      <div className="app-page-inner flex flex-col items-center justify-start pt-2">
 
         {/* Header */}
-        <div className="w-full max-w-4xl mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-4xl font-black tracking-wider text-center mb-3" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.15em" }}>
-            🎲 ROLL TO WIN!
-          </h1>
-          <div className="flex justify-between items-center px-2 md:px-8">
-            <p className="text-lg md:text-xl font-black text-yellow-600" style={{ fontFamily: "Courier New, monospace" }}>
-              💰 {coins}
-            </p>
+        <div className="w-full max-w-5xl mb-6 md:mb-8">
+          <div className="mb-5">
+            <p className="eyebrow mb-3 text-center">High-low mode</p>
+            <h1 className="page-title text-center">Roll the odds.</h1>
+            <p className="page-subtitle mx-auto mt-3 text-center">Pick a side, then see if you can beat the system.</p>
+          </div>
+          <div className="app-surface flex flex-col justify-between gap-4 rounded-2xl p-4 md:flex-row md:items-center md:px-6">
+            <div className="status-chip text-sm"><span>💰</span> Coins <strong>{coins}</strong></div>
             <div className="w-16 flex-shrink-0" />
           </div>
         </div>
@@ -309,9 +309,9 @@ export default function RollPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-red-100 dark:bg-red-900 border-2 border-red-600 rounded-lg p-4 md:p-6 text-center w-full"
+              className="w-full rounded-2xl border border-red-400/30 bg-red-400/10 p-4 text-center md:p-5"
             >
-              <p className="text-base md:text-lg font-bold text-red-800 dark:text-red-200" style={{ fontFamily: "Courier New, monospace" }}>
+              <p className="text-sm font-semibold text-[var(--app-ink)] md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 {isTimerFromDifferentPage
                   ? "🎰 Active timer from Spin! Go to Spin page to continue or skip."
                   : `⏱️ You have an active timer! Re-roll costs ${getSkipCost()} coins, or finish the timer.`}
@@ -321,8 +321,8 @@ export default function RollPage() {
 
           {/* Dice Display — horizontally scrollable on very small screens */}
           {(gameState === "choosing" || gameState === "rolling" || gameState === "result-shown") && (
-            <div className="w-full overflow-x-auto">
-              <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 md:p-12 shadow-2xl border-8 border-yellow-600 relative min-w-max md:min-w-0 mx-auto">
+            <div className="w-full overflow-visible">
+              <div className="casino-frame relative mx-auto w-full max-w-4xl min-w-0 rounded-3xl p-4 shadow-2xl md:p-10">
                 {/* Decorative lights top */}
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex gap-3">
                   <div className="w-4 h-4 rounded-full bg-yellow-400 shadow-lg shadow-yellow-400 animate-pulse" />
@@ -440,8 +440,8 @@ export default function RollPage() {
                   onClick={() => handleChoice("task")}
                   className={`px-8 md:px-12 py-6 md:py-8 rounded-lg border-4 font-black text-xl md:text-2xl transition-all ${
                     userChoice === "task"
-                      ? "bg-blue-600 text-white border-blue-400 shadow-lg"
-                      : "bg-white dark:bg-gray-700 text-black dark:text-white border-white dark:border-white hover:border-blue-400 dark:hover:border-blue-400"
+                      ? "bg-sky-600 text-white border-sky-300 shadow-lg"
+                      : "bg-[var(--app-surface-strong)] text-[var(--app-ink)] border-[var(--app-border)] hover:border-sky-400"
                   }`}
                   style={{ fontFamily: "Courier New, monospace" }}
                 >
@@ -455,7 +455,7 @@ export default function RollPage() {
                   className={`px-8 md:px-12 py-6 md:py-8 rounded-lg border-4 font-black text-xl md:text-2xl transition-all ${
                     userChoice === "leisure"
                       ? "bg-purple-600 text-white border-purple-400 shadow-lg"
-                      : "bg-white dark:bg-gray-700 text-black dark:text-white border-white dark:border-white hover:border-purple-400 dark:hover:border-purple-400"
+                      : "bg-[var(--app-surface-strong)] text-[var(--app-ink)] border-[var(--app-border)] hover:border-fuchsia-400"
                   }`}
                   style={{ fontFamily: "Courier New, monospace" }}
                 >
@@ -489,7 +489,7 @@ export default function RollPage() {
           {/* Reward Display */}
           {gameState === "reward-displaying" && rewardItem && (
             <div className="flex flex-col items-center gap-6 md:gap-8 w-full">
-              <div className="bg-gradient-to-br from-yellow-300 to-yellow-200 border-4 border-yellow-600 rounded-2xl p-6 md:p-8 shadow-lg inline-block max-w-full">
+              <div className="inline-block max-w-full rounded-2xl border border-amber-300/60 bg-gradient-to-b from-amber-200 to-amber-400 p-6 shadow-lg md:p-8">
                 <p className="text-3xl md:text-6xl font-black text-gray-900 break-words text-center" style={{ fontFamily: "Courier New, monospace" }}>
                   {rewardItem}
                 </p>
@@ -542,9 +542,9 @@ export default function RollPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="bg-red-100 dark:bg-red-900 border-2 border-red-600 rounded-lg p-4 md:p-6 text-center w-full"
+              className="w-full rounded-2xl border border-red-400/30 bg-red-400/10 p-4 text-center md:p-5"
             >
-              <p className="text-base md:text-lg font-bold text-red-800 dark:text-red-200" style={{ fontFamily: "Courier New, monospace" }}>
+              <p className="text-sm font-semibold text-[var(--app-ink)] md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 {isTimerFromDifferentPage
                   ? "🎰 Cannot roll! Go to Spin page to handle that timer."
                   : `💰 Not enough coins to re-roll! You need ${getSkipCost()} coins.`}
@@ -555,15 +555,15 @@ export default function RollPage() {
           {/* Status Message */}
           <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 text-right z-20 max-w-[90vw] md:max-w-none">
             {isRolling ? (
-              <p className="text-sm md:text-lg font-bold text-white bg-blue-600 dark:bg-blue-700 rounded-lg px-3 md:px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
+              <p className="rounded-xl border border-sky-300/30 bg-sky-500/20 px-3 py-2 text-sm font-bold uppercase tracking-widest text-[var(--app-ink)] shadow-lg md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 🎲 Rolling...
               </p>
             ) : gameState === "reward-displaying" ? (
-              <p className="text-sm md:text-lg font-bold text-white bg-green-600 dark:bg-green-700 rounded-lg px-3 md:px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
+              <p className="rounded-xl border border-emerald-300/30 bg-emerald-500/20 px-3 py-2 text-sm font-bold uppercase tracking-widest text-[var(--app-ink)] shadow-lg md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 ✨ You got your reward!
               </p>
             ) : (
-              <p className="text-sm md:text-lg font-bold text-white bg-gray-700 dark:bg-gray-600 rounded-lg px-3 md:px-4 py-2 uppercase tracking-widest shadow-lg" style={{ fontFamily: "Courier New, monospace" }}>
+              <p className="rounded-xl border border-white/10 bg-slate-900/75 px-3 py-2 text-sm font-bold uppercase tracking-widest text-white shadow-lg md:text-base" style={{ fontFamily: "Courier New, monospace" }}>
                 🎲 Roll the dice 🎲
               </p>
             )}
@@ -573,9 +573,9 @@ export default function RollPage() {
         {/* Popup Notification */}
         {popupResult && (
           <>
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
+            <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" />
             <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce w-[90vw] md:w-auto">
-              <div className="bg-gradient-to-br from-yellow-300 via-yellow-200 to-yellow-100 border-8 border-yellow-600 rounded-3xl px-8 md:px-16 py-8 md:py-12 shadow-2xl">
+              <div className="rounded-3xl border border-amber-300/70 bg-gradient-to-b from-amber-200 to-amber-400 px-8 py-8 shadow-2xl md:px-16 md:py-12">
                 <p className="text-xl md:text-2xl font-black text-yellow-700 uppercase mb-4 tracking-widest text-center" style={{ fontFamily: "Courier New, monospace" }}>
                   You Got:
                 </p>
