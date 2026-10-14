@@ -127,7 +127,7 @@ export function SlotMachine({ isSpinning, onComplete }: SlotMachineProps) {
   const displayStrips = strips[0].length > 0 ? strips : idleStrips;
 
   return (
-    <div className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center gap-2 md:gap-3">
       <span className="select-none text-xl font-black text-yellow-400 drop-shadow-[0_0_6px_rgba(234,179,8,0.8)]">▶</span>
 
       <div className="flex gap-3">
@@ -135,9 +135,9 @@ export function SlotMachine({ isSpinning, onComplete }: SlotMachineProps) {
           <div key={reelIdx} className="flex flex-col items-center gap-2">
             {/* Reel window */}
             <div
-              className="relative overflow-hidden rounded-lg border-[3px] border-gray-500 bg-black"
+              className="relative overflow-hidden rounded-xl border-2 border-amber-300/60 bg-slate-950"
               style={{
-                width: 130,
+                width: "clamp(78px, 24vw, 130px)",
                 height: WINDOW_HEIGHT,
                 boxShadow: "inset 0 6px 16px rgba(0,0,0,0.9), inset 0 -6px 16px rgba(0,0,0,0.9)",
               }}
@@ -162,7 +162,7 @@ export function SlotMachine({ isSpinning, onComplete }: SlotMachineProps) {
                   <div
                     key={idx}
                     style={{ height: ITEM_HEIGHT, flexShrink: 0 }}
-                    className="flex flex-col items-center justify-center rounded-md border border-indigo-500/60 bg-gradient-to-b from-indigo-600 via-indigo-800 to-indigo-950 px-2"
+                    className="flex flex-col items-center justify-center rounded-lg border border-sky-300/20 bg-gradient-to-b from-slate-700 via-slate-900 to-slate-950 px-2"
                   >
                     <span className="select-none text-3xl leading-none">{item.emoji}</span>
                     <span

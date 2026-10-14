@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const EMOJI_LIST = [
   { emoji: "😊", tags: "smile happy face" },
@@ -269,7 +270,8 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
   const [customInput, setCustomInput] = useState("");
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
-  const [pickerStyle, setPickerStyle] = useState<React.CSSProperties>({});
+  const [pickerStyle, setPickerStyle] = useState<React.CSSProperties>({ position: "fixed", visibility: "hidden" });
+
 
   const filteredEmojis = EMOJI_LIST.filter(
     (item) =>
@@ -277,37 +279,60 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
       item.tags.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
   useEffect(() => {
-    if (isOpen && buttonRef.current && pickerRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const pickerWidth = 384; // w-96 = 24rem = 384px
-      const pickerHeight = 320; // max-h-80 = 320px (approximate)
-      const viewportWidth = window.innerWidth;
+    if (!isOpen) {
+      setPickerStyle({ position: "fixed", visibility: "hidden" });
+      return;
+    }
+
+    const updatePosition = () => {
+      if (!buttonRef.current || !pickerRef.current) return;
+
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const pickerRect = pickerRef.current.getBoundingClientRect();
+      const margin = 8;
+      const gap = 8;
+      const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth);
       const viewportHeight = window.innerHeight;
-
-      let left = rect.left;
-      let top = rect.bottom + 8; // Position below button by default
-
-      // Check if picker would go off-screen to the right
-      if (rect.left + pickerWidth > viewportWidth) {
-        // Align to the right edge with padding
-        left = Math.max(8, viewportWidth - pickerWidth - 8);
-      }
-
-      // Check if picker would go off-screen at the bottom, if so position above
-      if (rect.bottom + pickerHeight + 8 > viewportHeight) {
-        top = rect.top - pickerHeight - 8;
-      }
+      const pickerWidth = Math.min(pickerRect.width || 384, viewportWidth - margin * 2);
+      const naturalHeight = pickerRef.current.scrollHeight;
+      const spaceBelow = Math.max(0, viewportHeight - buttonRect.bottom - margin - gap);
+      const spaceAbove = Math.max(0, buttonRect.top - margin - gap);
+      const preferredHeight = Math.min(naturalHeight, 520);
+      const placeBelow = spaceBelow >= preferredHeight || spaceBelow >= spaceAbove;
+      const availableHeight = Math.max(180, placeBelow ? spaceBelow : spaceAbove);
+      const panelHeight = Math.min(naturalHeight, availableHeight);
+      const maxLeft = Math.max(margin, viewportWidth - pickerWidth - margin);
+      const preferredLeft = buttonRect.right - pickerWidth;
+      const left = Math.min(Math.max(margin, preferredLeft), maxLeft);
+      const preferredTop = placeBelow
+        ? buttonRect.bottom + gap
+        : buttonRect.top - panelHeight - gap;
+      const maxTop = Math.max(margin, viewportHeight - panelHeight - margin);
+      const top = Math.min(Math.max(margin, preferredTop), maxTop);
 
       setPickerStyle({
         position: "fixed",
-        left: `${Math.max(0, left)}px`,
-        top: `${Math.max(0, top)}px`,
+        left: left + "px",
+        top: top + "px",
+        width: pickerWidth + "px",
+        maxHeight: panelHeight + "px",
         zIndex: 9999,
+        visibility: "visible",
       });
-    }
-  }, [isOpen]);
+    };
 
+    const frame = window.requestAnimationFrame(updatePosition);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen, searchTerm]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -333,21 +358,21 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
   };
 
   return (
-    <div>
+    <div className="relative inline-block">
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="min-w-16 px-3 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-white text-center font-semibold text-2xl hover:border-yellow-400 dark:hover:border-yellow-400 transition cursor-pointer overflow-hidden"
+        className="app-field min-w-16 cursor-pointer overflow-hidden text-center text-2xl transition hover:border-[var(--app-accent)]"
         title="Pick an emoji"
       >
         {value || "😊"}
       </button>
 
-      {isOpen && (
+      {isOpen && typeof document !== "undefined" && createPortal(
         <div
           ref={pickerRef}
           style={pickerStyle}
-          className="bg-white dark:bg-gray-800 border-2 border-white dark:border-gray-600 rounded-lg shadow-xl p-3 w-96 max-h-80 overflow-hidden flex flex-col"
+          className="app-surface fixed flex w-96 max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl p-3 shadow-2xl"
         >
           {/* Search Input */}
           <input
@@ -355,7 +380,7 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
             placeholder="Search emojis... (e.g., smile, heart, food)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border-2 border-gray-400 dark:border-gray-500 rounded bg-white dark:bg-gray-700 text-black dark:text-white text-sm mb-3 focus:border-yellow-400 dark:focus:border-yellow-400 outline-none transition"
+            className="app-field mb-3 w-full text-sm"
           />
 
           {/* Emoji Grid */}
@@ -370,7 +395,7 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
                       setIsOpen(false);
                       setSearchTerm("");
                     }}
-                    className="text-2xl p-2 rounded hover:bg-yellow-200 dark:hover:bg-yellow-700 transition cursor-pointer"
+                    className="rounded-lg p-2 text-2xl transition hover:bg-amber-400/20 cursor-pointer"
                     title={item.tags}
                   >
                     {item.emoji}
@@ -397,18 +422,19 @@ export default function EmojiPicker({ value, onChange }: EmojiPickerProps) {
                 onChange={(e) => setCustomInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleCustomEmojiAdd()}
                 maxLength={2}
-                className="flex-1 px-2 py-2 border-2 border-gray-400 dark:border-gray-500 rounded bg-white dark:bg-gray-700 text-black dark:text-white text-sm focus:border-yellow-400 dark:focus:border-yellow-400 outline-none transition"
+                className="app-field flex-1 text-sm"
               />
               <button
                 onClick={handleCustomEmojiAdd}
                 disabled={!customInput.trim()}
-                className="px-3 py-2 bg-app-sidebar text-white rounded text-sm font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="app-button app-button-primary px-3 text-xs"
               >
                 Add
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

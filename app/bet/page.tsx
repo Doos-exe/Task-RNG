@@ -103,12 +103,12 @@ export default function TasksPage() {
   };
 
   return (
-    <main className="min-h-screen bg-app-lightMain dark:bg-app-darkMain text-app-lightText dark:text-app-darkText p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>Bet</h1>
+    <main className="app-page text-app-lightText dark:text-app-darkText">
+      <div className="app-page-inner !max-w-6xl">
+        <div className="mb-8"><p className="eyebrow mb-3">Your control room</p><h1 className="page-title">Plan the table.</h1><p className="page-subtitle mt-3">Add the tasks and breaks you want the roulette system to choose from.</p></div>
 
         {/* Add Task Input */}
-        <div className="mb-8 space-y-4">
+        <div className="app-surface mb-8 rounded-2xl p-4 md:p-5 space-y-4">
           <div className="flex gap-2">
             <input
               type="text"
@@ -116,14 +116,14 @@ export default function TasksPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleAdd()}
               placeholder="Add a new task..."
-              className="flex-1 px-4 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-300 outline-none focus:border-yellow-400 dark:focus:border-yellow-400 transition font-semibold"
+              className="app-field flex-1 font-medium"
               style={{ fontFamily: "Courier New, monospace" }}
             />
             <EmojiPicker value={emoji} onChange={setEmoji} />
             <button
               onClick={handleAdd}
               disabled={!input.trim()}
-              className="px-6 py-3 bg-app-sidebar text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition font-bold text-lg shadow-md"
+              className="app-button app-button-primary px-5 text-lg"
             >
               +
             </button>
@@ -135,10 +135,10 @@ export default function TasksPage() {
               <button
                 key={priority}
                 onClick={() => setSelectedPriority(priority)}
-                className={`px-4 py-2 rounded border-2 font-bold transition ${
+                className={`rounded-lg border px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider transition ${
                   selectedPriority === priority
-                    ? "bg-app-sidebar text-white border-white dark:border-white shadow-md"
-                    : "border-white dark:border-white text-white dark:text-white hover:border-yellow-400 dark:hover:border-yellow-400"
+                    ? "bg-[var(--app-ink)] text-[var(--app-surface-strong)] border-[var(--app-ink)] shadow-md"
+                    : "border-[var(--app-border)] text-[var(--app-muted)] hover:border-[var(--app-accent)] hover:text-[var(--app-ink)]"
                 }`}
                 style={{ fontFamily: "Courier New, monospace" }}
               >
@@ -149,25 +149,25 @@ export default function TasksPage() {
         </div>
 
         {/* Tasks Table */}
-        <div className="overflow-x-auto rounded-lg shadow-lg">
-          <table className="w-full border-collapse border-2 border-white dark:border-white">
+        <div className="app-surface overflow-x-auto rounded-2xl">
+          <table className="w-full border-separate border-spacing-0">
             <thead>
-              <tr className="border-2 border-white dark:border-white bg-white dark:bg-gray-700">
-                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg w-24" style={{ fontFamily: "Courier New, monospace" }}>
+              <tr className="border-b border-[var(--app-border)] bg-[var(--app-surface-strong)]">
+                <th className="px-4 py-3 text-center font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] md:px-6 w-24">
                   Symbol
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg flex-1" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-4 py-3 text-left font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] md:px-6">
                   Tasks
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg w-48" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-4 py-3 text-left font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] md:px-6 w-48">
                   Risk
                 </th>
               </tr>
             </thead>
             <tbody>
               {pendingTasks.length === 0 ? (
-                <tr className="border-2 border-white dark:border-white">
-                  <td colSpan={3} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
+                <tr className="border-b border-[var(--app-border)]">
+                  <td colSpan={3} className="px-6 py-10 text-center text-sm font-medium text-[var(--app-muted)]" style={{ backgroundColor: "transparent" }}>
                     No tasks yet. Add one to get started!
                   </td>
                 </tr>
@@ -175,13 +175,13 @@ export default function TasksPage() {
                 pendingTasks.map((task) => (
                   <tr
                     key={task.id}
-                    className="border-2 border-white dark:border-white dark:bg-gray-600 hover:opacity-90 transition"
-                    style={{ backgroundColor: "#1a3a32" }}
+                    className="border-b border-[var(--app-border)] bg-transparent transition hover:bg-[var(--app-surface-strong)]"
+                    style={{ backgroundColor: "transparent" }}
                   >
-                    <td className="px-6 py-4 border-r-2 border-white dark:border-white text-center font-bold text-2xl">
+                    <td className="border-b border-[var(--app-border)] px-4 py-4 text-center text-2xl md:px-6">
                       <EmojiPicker value={task.emoji} onChange={(newEmoji) => updateTaskEmoji(task.id, newEmoji)} />
                     </td>
-                    <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
+                    <td className="border-b border-[var(--app-border)] px-4 py-4 font-medium text-[var(--app-ink)] md:px-6" style={{ fontFamily: "Courier New, monospace" }}>
                       <div className="flex justify-between items-center">
                         {editingTaskId === task.id ? (
                           <input
@@ -192,7 +192,7 @@ export default function TasksPage() {
                               if (e.key === "Enter") handleSaveEditTask(task.id);
                               if (e.key === "Escape") handleCancelEditTask();
                             }}
-                            className="px-3 py-2 border-2 border-yellow-400 rounded bg-gray-700 text-white flex-1 font-semibold"
+                            className="app-field flex-1 font-medium"
                             autoFocus
                           />
                         ) : (
@@ -237,7 +237,7 @@ export default function TasksPage() {
                         </div>
                       </div>
                     </td>
-                    <td className={`px-6 py-4 border-l-2 border-white dark:border-white font-bold ${getRiskColor(task.priority || "medium")}`} style={{ fontFamily: "Courier New, monospace" }}>
+                    <td className={`border-b border-[var(--app-border)] px-4 py-4 font-bold md:px-6 ${getRiskColor(task.priority || "medium")}`} style={{ fontFamily: "Courier New, monospace" }}>
                       {getRiskLabel(task.priority || "medium")}
                     </td>
                   </tr>
@@ -248,8 +248,8 @@ export default function TasksPage() {
         </div>
 
         {/* Add Leisure Input */}
-        <div className="mt-12 mb-8 space-y-4">
-          <h2 className="text-2xl font-bold tracking-wider" style={{ fontFamily: "Courier New, monospace", letterSpacing: "0.1em" }}>Leisure Activities</h2>
+        <div className="mt-12 mb-8 space-y-4"><div><p className="eyebrow mb-2">Recharge menu</p>
+          <h2 className="text-2xl font-bold tracking-tight">Leisure activities</h2></div>
           <div className="flex gap-2">
             <input
               type="text"
@@ -257,14 +257,14 @@ export default function TasksPage() {
               onChange={(e) => setLeisureInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleAddLeisure()}
               placeholder="Add a new leisure activity..."
-              className="flex-1 px-4 py-3 border-2 border-white dark:border-white rounded bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-300 outline-none focus:border-yellow-400 dark:focus:border-yellow-400 transition font-semibold"
+              className="app-field flex-1 font-medium"
               style={{ fontFamily: "Courier New, monospace" }}
             />
             <EmojiPicker value={leisureEmoji} onChange={setLeisureEmoji} />
             <button
               onClick={handleAddLeisure}
               disabled={!leisureInput.trim()}
-              className="px-6 py-3 bg-app-sidebar text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition font-bold text-lg shadow-md"
+              className="app-button app-button-primary px-5 text-lg"
             >
               +
             </button>
@@ -272,22 +272,22 @@ export default function TasksPage() {
         </div>
 
         {/* Leisure Table */}
-        <div className="overflow-x-auto rounded-lg shadow-lg">
-          <table className="w-full border-collapse border-2 border-white dark:border-white">
+        <div className="app-surface overflow-x-auto rounded-2xl">
+          <table className="w-full border-separate border-spacing-0">
             <thead>
-              <tr className="border-2 border-white dark:border-white bg-white dark:bg-gray-700">
-                <th className="px-6 py-4 text-center font-bold text-black dark:text-white text-lg w-24" style={{ fontFamily: "Courier New, monospace" }}>
+              <tr className="border-b border-[var(--app-border)] bg-[var(--app-surface-strong)]">
+                <th className="px-4 py-3 text-center font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] md:px-6 w-24">
                   Symbol
                 </th>
-                <th className="px-6 py-4 text-left font-bold text-black dark:text-white border-l-2 border-white dark:border-white text-lg flex-1" style={{ fontFamily: "Courier New, monospace" }}>
+                <th className="px-4 py-3 text-left font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] md:px-6">
                   Leisure Activity
                 </th>
               </tr>
             </thead>
             <tbody>
               {leisures.length === 0 ? (
-                <tr className="border-2 border-white dark:border-white">
-                  <td colSpan={2} className="px-6 py-8 text-center text-white dark:text-white font-semibold" style={{ backgroundColor: "#1a3a32" }}>
+                <tr className="border-b border-[var(--app-border)]">
+                  <td colSpan={2} className="px-6 py-10 text-center text-sm font-medium text-[var(--app-muted)]" style={{ backgroundColor: "transparent" }}>
                     No leisure activities yet. Add one to get started!
                   </td>
                 </tr>
@@ -295,13 +295,13 @@ export default function TasksPage() {
                 leisures.map((leisure) => (
                   <tr
                     key={leisure.id}
-                    className="border-2 border-white dark:border-white dark:bg-gray-600 hover:opacity-90 transition"
-                    style={{ backgroundColor: "#1a3a32" }}
+                    className="border-b border-[var(--app-border)] bg-transparent transition hover:bg-[var(--app-surface-strong)]"
+                    style={{ backgroundColor: "transparent" }}
                   >
-                    <td className="px-6 py-4 border-r-2 border-white dark:border-white text-center font-bold text-2xl">
+                    <td className="border-b border-[var(--app-border)] px-4 py-4 text-center text-2xl md:px-6">
                       <EmojiPicker value={leisure.emoji} onChange={(newEmoji) => updateLeisureEmoji(leisure.id, newEmoji)} />
                     </td>
-                    <td className="px-6 py-4 text-white dark:text-white font-semibold" style={{ fontFamily: "Courier New, monospace" }}>
+                    <td className="border-b border-[var(--app-border)] px-4 py-4 font-medium text-[var(--app-ink)] md:px-6" style={{ fontFamily: "Courier New, monospace" }}>
                       <div className="flex justify-between items-center">
                         {editingLeisureId === leisure.id ? (
                           <input
@@ -312,7 +312,7 @@ export default function TasksPage() {
                               if (e.key === "Enter") handleSaveEditLeisure(leisure.id);
                               if (e.key === "Escape") handleCancelEditLeisure();
                             }}
-                            className="px-3 py-2 border-2 border-yellow-400 rounded bg-gray-700 text-white flex-1 font-semibold"
+                            className="app-field flex-1 font-medium"
                             autoFocus
                           />
                         ) : (
@@ -367,8 +367,8 @@ export default function TasksPage() {
         </div>
 
         {/* Info */}
-        <div className="mt-8 p-6 bg-blue-100 dark:bg-blue-900 border-2 border-blue-600 rounded-lg">
-          <p className="text-lg font-bold text-blue-800 dark:text-blue-200" style={{ fontFamily: "Courier New, monospace" }}>
+        <div className="mt-8 flex gap-3 rounded-2xl border border-sky-400/25 bg-sky-500/10 p-5">
+          <p className="text-sm font-medium leading-6 text-[var(--app-ink)]">
             💡 Rest and Game are default leisure activities. You can add more custom activities that will appear in your spins with their emojis!
           </p>
         </div>
