@@ -85,6 +85,14 @@ html:not(.dark) .app-page .page-subtitle {
   color: rgba(240, 250, 242, 0.78);
 }
 
+html:not(.dark) .app-page .app-surface .page-title {
+  color: var(--app-ink);
+}
+
+html:not(.dark) .app-page .app-surface .page-subtitle {
+  color: var(--app-muted);
+}
+
 html:not(.dark) .app-page .app-surface,
 html:not(.dark) .app-page .status-chip {
   color: var(--app-ink);
@@ -136,6 +144,118 @@ html:not(.dark) .app-page .status-chip {
 }
 .app-field::placeholder { color: var(--app-muted); }
 .app-field:focus { border-color: var(--app-accent); box-shadow: 0 0 0 4px rgba(184, 135, 45, 0.14); }
+
+.dashboard-layout { display: grid; gap: clamp(2rem, 4vw, 4rem); align-items: start; }
+.dashboard-content, .notes-table { min-width: 0; }
+
+.notes-deck-area { display: flex; flex-direction: column; align-items: center; padding: 1.5rem 0 2rem; }
+.notes-deck {
+  position: relative;
+  display: block;
+  width: min(230px, 72vw);
+  height: 315px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: rotate(8deg);
+  transition: transform 350ms ease, filter 350ms ease;
+  filter: drop-shadow(12px 20px 13px rgba(0, 0, 0, 0.35));
+  perspective: 900px;
+}
+.notes-deck:hover, .notes-deck:focus-visible { transform: rotate(-8deg) translateY(-5px); }
+.notes-deck-open { transform: rotate(-3deg); }
+.notes-deck-open:hover, .notes-deck-open:focus-visible { transform: rotate(-8deg) translateY(-5px); }
+.notes-deck-face, .notes-deck-lid, .notes-deck-bottom { position: absolute; display: block; border-radius: 10px; }
+.notes-deck-bottom {
+  inset: 13px -10px -12px 10px;
+  background: #b9cfeb;
+  border: 2px solid #f5f9ff;
+  box-shadow: 5px 5px 0 #294a70;
+}
+.notes-deck-face {
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  overflow: hidden;
+  color: #173d69;
+  border: 7px solid #f7fbff;
+  outline: 2px solid #173d69;
+  background: repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,.13) 12px 14px), linear-gradient(145deg, #dceafb, #93b7df);
+  box-shadow: inset 0 0 0 2px #2a5b92, inset 0 0 0 9px #f7fbff, inset 0 0 0 11px #2a5b92;
+  font-family: Georgia, "Times New Roman", serif;
+}
+.notes-deck-face::before, .notes-deck-face::after { content: ""; position: absolute; width: 125px; height: 125px; border: 2px solid currentColor; opacity: .25; transform: rotate(45deg); }
+.notes-deck-face::before { top: -90px; left: -75px; }
+.notes-deck-face::after { bottom: -90px; right: -75px; }
+.notes-deck-face strong { position: relative; font-size: 1.4rem; letter-spacing: .08em; text-align: center; }
+.notes-deck-kicker, .notes-deck-detail { position: relative; font: 700 .64rem "Courier New", monospace; letter-spacing: .2em; }
+.notes-deck-ornament { position: relative; font-size: 2.2rem; line-height: 1; }
+.notes-deck-divider { width: 54%; height: 1px; background: currentColor; opacity: .6; }
+.notes-deck-lid {
+  inset: -18px 8px auto;
+  z-index: 1;
+  height: 33px;
+  border: 3px solid #f7fbff;
+  background: #2a5b92;
+  transform-origin: left bottom;
+  transition: transform 450ms ease;
+}
+.notes-deck-open .notes-deck-lid { transform: translate(-12px, -15px) rotate(-37deg); }
+.notes-deck-hint { max-width: 230px; margin-top: 1.7rem; color: #e3f0e7; font-size: .75rem; text-align: center; line-height: 1.5; }
+
+html.dark .notes-deck-bottom { background: #661b22; border-color: #b9404b; box-shadow: 5px 5px 0 #09090c; }
+html.dark .notes-deck-face { color: #f5e4e2; border-color: #191115; outline-color: #b9404b; background: repeating-linear-gradient(45deg, transparent 0 12px, rgba(185,64,75,.09) 12px 14px), linear-gradient(145deg, #30151c, #0d0d11); box-shadow: inset 0 0 0 2px #b9404b, inset 0 0 0 9px #191115, inset 0 0 0 11px #b9404b; }
+html.dark .notes-deck-lid { border-color: #b9404b; background: #120d12; }
+
+.notes-table-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 2rem; }
+.notes-count { flex: none; padding: .45rem .75rem; color: var(--app-ink); background: var(--app-surface); border: 1px solid var(--app-border); border-radius: 999px; font: 700 .7rem "Courier New", monospace; }
+.notes-cards { display: flex; flex-wrap: wrap; gap: 1.35rem; align-items: flex-start; min-height: 270px; }
+.note-card {
+  position: relative;
+  display: block;
+  width: 178px;
+  height: 250px;
+  flex: none;
+  padding: 16px;
+  border: 1px solid #e1dcd1;
+  border-radius: 11px;
+  color: #191919;
+  background: #fffdf8;
+  box-shadow: 2px 4px 0 #d9d4c8, 6px 11px 18px rgba(0,0,0,.22);
+  font-family: Georgia, "Times New Roman", serif;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.note-card:hover, .note-card:focus-visible { transform: translateY(-9px) rotate(-2deg); box-shadow: 3px 7px 0 #d9d4c8, 9px 20px 25px rgba(0,0,0,.28); }
+.note-card-red { color: #aa242c; }
+.note-card-corner { position: absolute; top: 11px; left: 12px; display: flex; flex-direction: column; align-items: center; font-size: 1.25rem; font-weight: 700; line-height: 1; }
+.note-card-corner-bottom { top: auto; left: auto; right: 12px; bottom: 11px; transform: rotate(180deg); }
+.note-card-content { display: flex; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: .7rem; text-align: center; }
+.note-card-suit { font-size: 2.1rem; line-height: 1; }
+.note-card-content strong { max-width: 100%; color: #1c1c1c; font-size: 1rem; line-height: 1.2; overflow-wrap: anywhere; }
+.note-card-content > span:last-child { display: -webkit-box; max-width: 100%; overflow: hidden; color: #645f59; font: .7rem/1.45 Inter, "Segoe UI", sans-serif; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
+.note-card-new { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .65rem; border: 2px dashed #d6d2c9; background: rgba(255,253,248,.86); text-align: center; }
+.note-card-new-mark { display: grid; width: 3rem; height: 3rem; place-items: center; border: 2px solid #173027; border-radius: 50%; font: 2rem/1 Georgia, serif; }
+.note-card-new strong { font-size: 1.05rem; }
+.note-card-new > span:last-child { color: #645f59; font: .7rem Inter, "Segoe UI", sans-serif; }
+.note-editor { display: flex; flex-direction: column; gap: .65rem; width: min(100%, 520px); margin-top: 2rem; padding: 1.4rem; border: 1px solid var(--app-border); border-radius: 1rem; background: var(--app-surface); color: var(--app-ink); box-shadow: var(--app-shadow); }
+.note-editor-top, .note-editor-actions { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
+.note-editor-top h2 { font: 700 1.25rem Georgia, serif; }
+.note-editor-close { font-size: 1.7rem; line-height: 1; }
+.note-editor label { margin-top: .35rem; font-size: .75rem; font-weight: 700; }
+.note-editor-body { min-height: 130px; resize: vertical; font: inherit; }
+.note-editor-actions { justify-content: flex-end; flex-wrap: wrap; margin-top: .5rem; }
+.note-delete { margin-right: auto; color: var(--app-red); font-size: .8rem; font-weight: 700; }
+
+@media (min-width: 1280px) { .dashboard-layout { grid-template-columns: minmax(0, 1fr) 230px; } .notes-deck-area { position: sticky; top: 3rem; padding-top: 3rem; } }
+@media (max-width: 1279px) { .notes-deck-area { padding-top: .5rem; } }
+@media (max-width: 640px) { .notes-table-heading { align-items: flex-start; flex-direction: column; } .notes-cards { justify-content: center; } }
 
 .casino-frame {
   background: linear-gradient(145deg, #18212b, #080c12 70%);

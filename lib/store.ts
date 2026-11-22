@@ -16,6 +16,13 @@ export interface Task {
   priority?: "low" | "medium" | "high";
 }
 
+export interface Note {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: number;
+}
+
 export interface Leisure {
   id: string;
   title: string;
@@ -36,6 +43,7 @@ export interface ActiveTimer {
 interface TaskStore {
   userId: string | null;
   tasks: Task[];
+  notes: Note[];
   leisures: Leisure[];
   coins: number;
   theme: "light" | "dark";
@@ -51,6 +59,9 @@ interface TaskStore {
   toggleTask: (id: string) => void;
   updateTask: (id: string, title: string) => void;
   updateTaskEmoji: (id: string, emoji: string) => void;
+  addNote: (title: string, body: string) => void;
+  updateNote: (id: string, title: string, body: string) => void;
+  removeNote: (id: string) => void;
   pendingCount: () => number;
   addCoins: (amount: number) => void;
   spendCoins: (amount: number) => boolean;
@@ -115,6 +126,7 @@ const loadFromLocalStorage = (userId: string): TaskStore | null => {
 export const useTaskStore = create<TaskStore>((set, get) => ({
   userId: null,
   tasks: [],
+  notes: [],
   leisures: DEFAULT_LEISURES,
   coins: 0,
   theme: "light",
@@ -132,7 +144,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       // Try to load user data from localStorage
       const loaded = loadFromLocalStorage(userId);
       if (loaded) {
-        set(loaded);
+        set({ ...loaded, notes: loaded.notes ?? [] });
         return;
       }
     }
@@ -141,6 +153,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     set({
       userId,
       tasks: [],
+      notes: [],
       leisures: DEFAULT_LEISURES,
       coins: 0,
       theme: "light",
@@ -214,6 +227,41 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         tasks: state.tasks.map((task) =>
           task.id === id ? { ...task, emoji } : task
         ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  addNote: (title, body) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        notes: [
+          ...state.notes,
+          { id: crypto.randomUUID(), title, body, createdAt: Date.now() },
+        ],
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  updateNote: (id, title, body) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        notes: state.notes.map((note) =>
+          note.id === id ? { ...note, title, body } : note
+        ),
+      };
+      saveToLocalStorage(newState);
+      return newState;
+    }),
+
+  removeNote: (id) =>
+    set((state) => {
+      const newState = {
+        ...state,
+        notes: state.notes.filter((note) => note.id !== id),
       };
       saveToLocalStorage(newState);
       return newState;

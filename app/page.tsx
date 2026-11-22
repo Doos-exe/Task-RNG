@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { PokerChip } from "@/components/PokerChip";
+import { NotesDesk } from "@/components/NotesDesk";
 import { useTaskStore } from "@/lib/store";
 
 const ACTIONS = [
@@ -11,6 +13,7 @@ const ACTIONS = [
 ];
 
 export default function Home() {
+  const [notesOpen, setNotesOpen] = useState(false);
   const tasks = useTaskStore((state) => state.tasks);
   const leisures = useTaskStore((state) => state.leisures);
   const coins = useTaskStore((state) => state.coins);
@@ -18,7 +21,8 @@ export default function Home() {
 
   return (
     <main className="app-page text-app-lightText dark:text-app-darkText">
-      <div className="app-page-inner">
+      <div className="app-page-inner dashboard-layout">
+        {!notesOpen && <div className="dashboard-content">
         <section className="mb-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
             <p className="eyebrow mb-3">Your decision desk</p>
@@ -59,7 +63,7 @@ export default function Home() {
             <span className="hidden text-xs text-[var(--app-muted)] md:block">Your workspace, your rules</span>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
             {ACTIONS.map((action) => (
               <div key={action.href} className="group flex min-h-[230px] flex-col items-center justify-center gap-3 rounded-3xl bg-transparent p-5 text-center transition duration-200 hover:-translate-y-1">
                 <PokerChip label={action.label} href={action.href} className="!h-36 !w-36 sm:!h-40 sm:!w-40" />
@@ -68,6 +72,8 @@ export default function Home() {
             ))}
           </div>
         </section>
+        </div>}
+        <NotesDesk open={notesOpen} onToggle={() => setNotesOpen((value) => !value)} />
       </div>
     </main>
   );
